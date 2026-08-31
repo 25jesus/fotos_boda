@@ -545,6 +545,45 @@
             margin-top: -8px;
             margin-bottom: 12px;
         }
+
+        /* Nuevo: Estilos para totales por vendedor en admin */
+        .seller-totals {
+            margin-top: 16px;
+            border-top: 1px solid var(--border);
+            padding-top: 12px;
+            font-size: 0.85rem;
+        }
+        .seller-totals h4 {
+            font-size: 0.9rem;
+            color: #8b949e;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+        .seller-total-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 4px 0;
+            border-bottom: 1px solid #1a1f27;
+        }
+        .seller-name {
+            font-weight: 600;
+        }
+        .seller-amounts {
+            display: flex;
+            gap: 10px;
+        }
+        .seller-amount {
+            font-variant-numeric: tabular-nums;
+        }
+        .seller-amount.paid {
+            color: #3fb950;
+        }
+        .seller-amount.pending {
+            color: #f0d0a0;
+        }
+        .seller-amount.total {
+            color: #58a6ff;
+        }
     </style>
 </head>
 <body>
@@ -628,6 +667,11 @@
             <div id="adminDebtList" class="admin-debt-list">
                 <div style="color:#8b949e; text-align:center; padding:10px;">No hay boletos con saldo pendiente.</div>
             </div>
+            <!-- Nuevo bloque para totales por vendedor -->
+            <div class="seller-totals" id="sellerTotalsContainer">
+                <h4>👥 Total vendido por persona</h4>
+                <div id="sellerTotalsList"></div>
+            </div>
             <div class="modal-actions">
                 <button class="btn" id="closeAdmin">Cerrar</button>
             </div>
@@ -692,6 +736,7 @@
             const adminPagados = document.getElementById('adminPagados');
             const adminDebtList = document.getElementById('adminDebtList');
             const closeAdminBtn = document.getElementById('closeAdmin');
+            const sellerTotalsList = document.getElementById('sellerTotalsList');
 
             // ══════════════════════════════════════
             // ESTADO DE CONEXIÓN
@@ -1069,30 +1114,70 @@
                     totalPending = 0,
                     pagados = 0;
                 const deudas = [];
+                // Objeto para acumular por vendedor
+                const sellerStats = {};
+
                 for (let i = 1; i <= TOTAL; i++) {
                     const t = tickets[i];
                     if (t.sold) {
                         vendidos++;
                         totalPaid += t.paid;
-                        if (t.paid >= t.price) {
-                            pagados++;
+                        const pending = t.price - t.paid;
+                        if (pending > 0) {
+                            totalPending += pending;
+                            deudas.push({ num: i, pending: pending });
                         } else {
-                            totalPending += (t.price - t.paid);
-                            deudas.push({ num: i, pending: t.price - t.paid });
+                            pagados++;
+                        }
+
+                        // Acumular por vendedor
+                        if (t.seller && t.seller.trim() !== '') {
+                            if (!sellerStats[t.seller]) {
+                                sellerStats[t.seller] = {
+                                    total: 0,
+                                    paid: 0,
+                                    pending: 0
+                                };
+                            }
+                            sellerStats[t.seller].total += t.price;
+                            sellerStats[t.seller].paid += t.paid;
+                            sellerStats[t.seller].pending += pending;
                         }
                     }
                 }
+
                 adminSold.textContent = vendidos;
                 adminPaid.textContent = `$${totalPaid}`;
                 adminPending.textContent = `$${totalPending}`;
                 adminPagados.textContent = pagados;
 
+                // Deudas list
                 if (deudas.length === 0) {
                     adminDebtList.innerHTML = '<div style="color:#8b949e; text-align:center; padding:10px;">No hay boletos con saldo pendiente.</div>';
                 } else {
                     adminDebtList.innerHTML = deudas.map(d =>
                         `<div class="debt-item"><span class="num">#${d.num}</span><span class="amount">$${d.pending} pendiente</span></div>`
                     ).join('');
+                }
+
+                // Renderizar totales por vendedor
+                const sellerNames = Object.keys(sellerStats);
+                if (sellerNames.length === 0) {
+                    sellerTotalsList.innerHTML = '<div style="color:#8b949e; text-align:center; padding:10px;">No hay ventas registradas.</div>';
+                } else {
+                    // Ordenar alfabéticamente para consistencia
+                    sellerNames.sort();
+                    sellerTotalsList.innerHTML = sellerNames.map(name => {
+                        const s = sellerStats[name];
+                        return `<div class="seller-total-item">
+                                    <span class="seller-name">${name}</span>
+                                    <span class="seller-amounts">
+                                        <span class="seller-amount total">Total $${s.total}</span>
+                                        <span class="seller-amount paid">Pagado $${s.paid}</span>
+                                        <span class="seller-amount pending">Pend. $${s.pending}</span>
+                                    </span>
+                                </div>`;
+                    }).join('');
                 }
             }
 
