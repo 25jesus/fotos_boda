@@ -546,43 +546,41 @@
             margin-bottom: 12px;
         }
 
-        /* Nuevo: Estilos para totales por vendedor en admin */
-        .seller-totals {
-            margin-top: 16px;
+        /* Estilos para el resumen de vendedores en el panel principal */
+        .seller-summary {
+            margin-top: 20px;
             border-top: 1px solid var(--border);
-            padding-top: 12px;
+            padding-top: 16px;
             font-size: 0.85rem;
+            background: #0d1117;
+            border-radius: 8px;
+            padding: 12px 16px;
         }
-        .seller-totals h4 {
-            font-size: 0.9rem;
+        .seller-summary h4 {
+            font-size: 0.95rem;
             color: #8b949e;
             margin-bottom: 8px;
             text-align: center;
-        }
-        .seller-total-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 4px 0;
-            border-bottom: 1px solid #1a1f27;
-        }
-        .seller-name {
             font-weight: 600;
         }
-        .seller-amounts {
+        .seller-summary-item {
             display: flex;
-            gap: 10px;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 0;
+            border-bottom: 1px solid #1a1f27;
         }
-        .seller-amount {
+        .seller-summary-item:last-child {
+            border-bottom: none;
+        }
+        .seller-summary-item .seller-name {
+            font-weight: 600;
+            color: #e6edf3;
+        }
+        .seller-summary-item .seller-ticket-count {
             font-variant-numeric: tabular-nums;
-        }
-        .seller-amount.paid {
-            color: #3fb950;
-        }
-        .seller-amount.pending {
-            color: #f0d0a0;
-        }
-        .seller-amount.total {
-            color: #58a6ff;
+            color: var(--green-bright);
+            font-weight: 700;
         }
     </style>
 </head>
@@ -620,6 +618,12 @@
         </div>
 
         <div class="ticket-grid" id="ticketGrid"></div>
+
+        <!-- Nuevo: resumen de boletos vendidos por persona -->
+        <div class="seller-summary" id="sellerSummary">
+            <h4>👥 Boletos vendidos por persona</h4>
+            <div id="sellerSummaryList"></div>
+        </div>
     </div>
 
     <!-- ===== MODAL DE VENTA / ABONO ===== -->
@@ -667,7 +671,7 @@
             <div id="adminDebtList" class="admin-debt-list">
                 <div style="color:#8b949e; text-align:center; padding:10px;">No hay boletos con saldo pendiente.</div>
             </div>
-            <!-- Nuevo bloque para totales por vendedor -->
+            <!-- Resumen de totales por vendedor en admin (incluye montos) -->
             <div class="seller-totals" id="sellerTotalsContainer">
                 <h4>👥 Total vendido por persona</h4>
                 <div id="sellerTotalsList"></div>
@@ -737,6 +741,9 @@
             const adminDebtList = document.getElementById('adminDebtList');
             const closeAdminBtn = document.getElementById('closeAdmin');
             const sellerTotalsList = document.getElementById('sellerTotalsList');
+
+            // Resumen en panel principal
+            const sellerSummaryList = document.getElementById('sellerSummaryList');
 
             // ══════════════════════════════════════
             // ESTADO DE CONEXIÓN
@@ -929,6 +936,34 @@
                 soldCountEl.textContent = vendidos;
                 totalPaidEl.textContent = `$${totalPaid}`;
                 totalPendingEl.textContent = `$${totalPending}`;
+
+                // Actualizar también el resumen de vendedores
+                actualizarResumenVendedores();
+            }
+
+            function actualizarResumenVendedores() {
+                const sellerCounts = {};
+                for (let i = 1; i <= TOTAL; i++) {
+                    const t = tickets[i];
+                    if (t.sold && t.seller && t.seller.trim() !== '') {
+                        if (!sellerCounts[t.seller]) {
+                            sellerCounts[t.seller] = 0;
+                        }
+                        sellerCounts[t.seller]++;
+                    }
+                }
+                const sellerNames = Object.keys(sellerCounts);
+                if (sellerNames.length === 0) {
+                    sellerSummaryList.innerHTML = '<div style="color:#8b949e; text-align:center; padding:10px;">No hay ventas registradas.</div>';
+                } else {
+                    sellerNames.sort();
+                    sellerSummaryList.innerHTML = sellerNames.map(name => 
+                        `<div class="seller-summary-item">
+                            <span class="seller-name">${name}</span>
+                            <span class="seller-ticket-count">${sellerCounts[name]} boletos</span>
+                        </div>`
+                    ).join('');
+                }
             }
 
             // ══════════════════════════════════════
