@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -577,7 +578,16 @@
             font-weight: 600;
             color: #e6edf3;
         }
+        .seller-summary-item .seller-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
         .seller-summary-item .seller-ticket-count {
+            font-variant-numeric: tabular-nums;
+            color: #b8b8b8;
+        }
+        .seller-summary-item .seller-total-amount {
             font-variant-numeric: tabular-nums;
             color: var(--green-bright);
             font-weight: 700;
@@ -619,9 +629,9 @@
 
         <div class="ticket-grid" id="ticketGrid"></div>
 
-        <!-- Nuevo: resumen de boletos vendidos por persona -->
+        <!-- Resumen de boletos y costo total vendido por persona -->
         <div class="seller-summary" id="sellerSummary">
-            <h4>👥 Boletos vendidos por persona</h4>
+            <h4>👥 Boletos vendidos y total por persona</h4>
             <div id="sellerSummaryList"></div>
         </div>
     </div>
@@ -671,7 +681,6 @@
             <div id="adminDebtList" class="admin-debt-list">
                 <div style="color:#8b949e; text-align:center; padding:10px;">No hay boletos con saldo pendiente.</div>
             </div>
-            <!-- Resumen de totales por vendedor en admin (incluye montos) -->
             <div class="seller-totals" id="sellerTotalsContainer">
                 <h4>👥 Total vendido por persona</h4>
                 <div id="sellerTotalsList"></div>
@@ -942,27 +951,35 @@
             }
 
             function actualizarResumenVendedores() {
-                const sellerCounts = {};
+                const sellerData = {};
                 for (let i = 1; i <= TOTAL; i++) {
                     const t = tickets[i];
                     if (t.sold && t.seller && t.seller.trim() !== '') {
-                        if (!sellerCounts[t.seller]) {
-                            sellerCounts[t.seller] = 0;
+                        if (!sellerData[t.seller]) {
+                            sellerData[t.seller] = {
+                                count: 0,
+                                total: 0
+                            };
                         }
-                        sellerCounts[t.seller]++;
+                        sellerData[t.seller].count++;
+                        sellerData[t.seller].total += t.price; // precio = número
                     }
                 }
-                const sellerNames = Object.keys(sellerCounts);
+                const sellerNames = Object.keys(sellerData);
                 if (sellerNames.length === 0) {
                     sellerSummaryList.innerHTML = '<div style="color:#8b949e; text-align:center; padding:10px;">No hay ventas registradas.</div>';
                 } else {
                     sellerNames.sort();
-                    sellerSummaryList.innerHTML = sellerNames.map(name => 
-                        `<div class="seller-summary-item">
-                            <span class="seller-name">${name}</span>
-                            <span class="seller-ticket-count">${sellerCounts[name]} boletos</span>
-                        </div>`
-                    ).join('');
+                    sellerSummaryList.innerHTML = sellerNames.map(name => {
+                        const data = sellerData[name];
+                        return `<div class="seller-summary-item">
+                                    <span class="seller-name">${name}</span>
+                                    <span class="seller-right">
+                                        <span class="seller-ticket-count">${data.count} boletos</span>
+                                        <span class="seller-total-amount">$${data.total}</span>
+                                    </span>
+                                </div>`;
+                    }).join('');
                 }
             }
 
@@ -1333,3 +1350,4 @@
     </script>
 </body>
 </html>
+```
