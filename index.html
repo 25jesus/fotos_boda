@@ -1,218 +1,929 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Invitación - Boda & Bautizo</title>
-    <!-- Fuentes para que el texto sea elegante -->
-    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Montserrat:wght@300;400&display=swap" rel="stylesheet">
-    
-    <style>
-        /* =========================================
-           1. COLORES EXACTOS DE LA IMAGEN
-           ========================================= */
-        :root {
-            --fondo-oscuro: #071221;       /* Azul muy oscuro */
-            --fondo-claro: #113355;        /* Azul marino para el degradado */
-            --color-petalo: rgba(120, 180, 230, 0.6); /* Azul claro con brillo */
-            --texto-blanco: #ffffff;
-            --texto-azul: #a1c4e6;
-        }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>💍 Comparte tus fotos - Nuestra Boda</title>
 
-        /* =========================================
-           2. ESTILOS GENERALES Y FONDO
-           ========================================= */
-        body, html {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden; /* Evita barras de desplazamiento */
-            background: linear-gradient(to bottom, var(--fondo-claro), var(--fondo-oscuro));
-            font-family: 'Montserrat', sans-serif;
-            color: var(--texto-blanco);
-        }
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
 
-        /* Contenedor donde caen los pétalos */
-        #contenedor-petalos {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none; /* No bloquea los clics */
-            z-index: 1;
-        }
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-        /* =========================================
-           3. DISEÑO DE LOS PÉTALOS (NO CAMBIA SU FUNCIÓN)
-           ========================================= */
-        .petalo {
-            position: absolute;
-            background: var(--color-petalo);
-            border-radius: 50% 0 50% 50%; /* Forma de pétalo */
-            box-shadow: 0 0 10px rgba(120, 180, 230, 0.4); /* Brillo suave */
-            filter: blur(1px); /* Efecto desenfocado como en la foto */
-            animation: caer linear infinite;
-        }
+<style>
+:root {
+    --noche-1: #0b2136;
+    --noche-2: #061525;
+    --noche-3: #040c15;
+    --dorado: #d9b779;
+    --dorado-claro: #f0d9a8;
+    --dorado-oscuro: #b8935a;
+    --azul-glow: #7fb3d5;
+    --blanco: #eef4fa;
+    --texto-suave: #93a9c0;
+    --glass: rgba(17, 42, 66, 0.62);
+    --borde: rgba(217, 183, 121, 0.26);
+}
 
-        /* Animación de caída */
-        @keyframes caer {
-            0% {
-                transform: translate3d(0, -10vh, 0) rotate(0deg) scale(1);
-                opacity: 0;
-            }
-            10% {
-                opacity: 1;
-            }
-            90% {
-                opacity: 1;
-            }
-            100% {
-                transform: translate3d(-20vw, 110vh, 0) rotate(360deg) scale(0.8);
-                opacity: 0;
-            }
-        }
+* { margin: 0; padding: 0; box-sizing: border-box; }
 
-        /* =========================================
-           4. CONTENIDO (Texto y Gráfico)
-           ========================================= */
-        .contenido {
-            position: relative;
-            z-index: 10;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            text-align: center;
-        }
+html, body { overflow-x: hidden; }
 
-        /* Gráfico central */
-        .grafico {
-            width: 100px;
-            height: 100px;
-            position: relative;
-            margin-bottom: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        .anillo {
-            position: absolute;
-            border-radius: 50%;
-            border: 2px solid rgba(255, 255, 255, 0.4);
-        }
-        .anillo:nth-child(1) { width: 80px; height: 80px; transform: rotate(30deg); border-color: #8ab4d4; }
-        .anillo:nth-child(2) { width: 90px; height: 50px; transform: rotate(-40deg); border-color: #d4b87e; }
-        .anillo:nth-child(3) { width: 50px; height: 90px; transform: rotate(45deg); border-color: rgba(255,255,255,0.2); }
-        .punto-central {
-            width: 10px;
-            height: 10px;
-            background: white;
-            border-radius: 50%;
-            box-shadow: 0 0 15px white;
-        }
+body {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    color: var(--blanco);
+    min-height: 100vh;
+    padding: 20px 16px 70px;
+    position: relative;
+    background:
+        radial-gradient(circle at 50% -10%, rgba(74, 140, 200, 0.30) 0%, rgba(74, 140, 200, 0) 55%),
+        radial-gradient(circle at 15% 85%, rgba(45, 95, 150, 0.22) 0%, rgba(45, 95, 150, 0) 55%),
+        linear-gradient(180deg, var(--noche-1) 0%, var(--noche-2) 55%, var(--noche-3) 100%);
+    background-attachment: fixed;
+}
 
-        /* Textos */
-        .subtitulo {
-            font-size: 0.9rem;
-            letter-spacing: 4px;
-            border: 1px solid rgba(138, 180, 212, 0.5);
-            padding: 10px 30px;
-            border-radius: 50px;
-            color: var(--texto-azul);
-            text-transform: uppercase;
-            margin-bottom: 20px;
-        }
+/* ================= PÉTALOS CAYENDO ================= */
+#petals {
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: 0;
+}
+.petal {
+    position: absolute;
+    top: -14vh;
+    display: block;
+    opacity: 0;
+    border-radius: 62% 38% 55% 45% / 55% 62% 38% 45%;
+    background: linear-gradient(135deg, rgba(150, 198, 240, 0.55) 0%, rgba(80, 135, 195, 0.12) 100%);
+    box-shadow: 0 0 14px rgba(130, 180, 230, 0.25);
+    animation-name: caer;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+    will-change: transform, opacity;
+}
+@keyframes caer {
+    0%   { transform: translate3d(0, -14vh, 0) rotate(0deg) scale(1); opacity: 0; }
+    8%   { opacity: var(--op, 0.7); }
+    25%  { transform: translate3d(26px, 20vh, 0) rotate(95deg) scale(1.06); }
+    50%  { transform: translate3d(-20px, 48vh, 0) rotate(200deg) scale(0.94); }
+    75%  { transform: translate3d(24px, 78vh, 0) rotate(292deg) scale(1.03); }
+    92%  { opacity: var(--op, 0.7); }
+    100% { transform: translate3d(-12px, 116vh, 0) rotate(390deg) scale(1); opacity: 0; }
+}
 
-        .nombres {
-            font-family: 'Great Vibes', cursive;
-            font-size: 3rem;
-            line-height: 1.2;
-            text-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
-            margin: 10px 0;
-        }
+/* Destellos / estrellas */
+.sparkle {
+    position: absolute;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 0 10px 3px rgba(255, 255, 255, 0.55), 0 0 22px 8px rgba(160, 200, 240, 0.25);
+    opacity: 0;
+    animation: centelleo 4s ease-in-out infinite;
+}
+@keyframes centelleo {
+    0%, 100% { opacity: 0; transform: scale(0.6); }
+    50%      { opacity: 0.9; transform: scale(1); }
+}
 
-        .nombres .ampersand {
-            font-size: 2rem;
-            color: #6bb2d1;
-            font-family: 'Montserrat', sans-serif;
-        }
+/* ================= LAYOUT ================= */
+.container {
+    max-width: 560px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 2;
+}
 
-        .fecha {
-            font-size: 1.1rem;
-            letter-spacing: 6px;
-            color: var(--texto-azul);
-            margin-top: 20px;
-        }
-    </style>
+/* ================= HEADER ================= */
+.header {
+    text-align: center;
+    margin-bottom: 30px;
+    padding-top: 12px;
+}
+
+.emblem {
+    position: relative;
+    width: 150px;
+    height: 150px;
+    margin: 0 auto 4px;
+}
+.emblem .halo {
+    position: absolute;
+    inset: -40%;
+    background: radial-gradient(circle,
+        rgba(217, 183, 121, 0.30) 0%,
+        rgba(120, 175, 220, 0.14) 40%,
+        transparent 68%);
+    animation: pulso 5.5s ease-in-out infinite;
+}
+@keyframes pulso {
+    0%, 100% { transform: scale(1);    opacity: 0.8; }
+    50%      { transform: scale(1.13); opacity: 1;   }
+}
+.emblem .orbita {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 106px;
+    height: 60px;
+    margin: -30px 0 0 -53px;
+    border-radius: 50%;
+    border: 1.6px solid rgba(232, 201, 138, 0.9);
+    box-shadow: 0 0 14px rgba(217, 183, 121, 0.45),
+                inset 0 0 14px rgba(217, 183, 121, 0.18);
+}
+.emblem .orbita.a { transform: rotate(30deg); }
+.emblem .orbita.b {
+    border-color: rgba(228, 240, 250, 0.85);
+    box-shadow: 0 0 14px rgba(180, 215, 245, 0.40),
+                inset 0 0 14px rgba(180, 215, 245, 0.15);
+    transform: rotate(-30deg);
+}
+.emblem .nucleo {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 16px;
+    height: 16px;
+    margin: -8px 0 0 -8px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 0 22px 8px rgba(255, 255, 255, 0.60),
+                0 0 44px 16px rgba(217, 183, 121, 0.32);
+}
+.emblem .punto {
+    position: absolute;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 0 10px 3px rgba(255, 255, 255, 0.75);
+    animation: centelleo 3.6s ease-in-out infinite;
+}
+.p1 { top: 14%; left: 18%; }
+.p2 { top: 8%;  left: 52%; animation-delay: .6s; }
+.p3 { top: 24%; left: 84%; animation-delay: 1.2s; }
+.p4 { top: 62%; left: 6%;  animation-delay: 1.8s; }
+.p5 { top: 78%; left: 62%; animation-delay: .3s; }
+.p6 { top: 84%; left: 88%; animation-delay: 2.2s; }
+
+.header h1 {
+    font-family: 'Great Vibes', cursive;
+    font-size: 3.1rem;
+    font-weight: 400;
+    line-height: 1.15;
+    color: #ffffff;
+    text-shadow: 0 0 18px rgba(217, 183, 121, 0.55),
+                 0 0 42px rgba(140, 190, 235, 0.35);
+    margin-bottom: 6px;
+}
+
+.pill {
+    display: inline-block;
+    padding: 8px 26px;
+    border: 1px solid rgba(217, 183, 121, 0.55);
+    border-radius: 999px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.66rem;
+    font-weight: 400;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--dorado-claro);
+    margin-bottom: 16px;
+    background: rgba(217, 183, 121, 0.05);
+}
+
+.header p {
+    font-size: 1.02rem;
+    color: var(--texto-suave);
+    font-style: italic;
+    line-height: 1.6;
+    max-width: 380px;
+    margin: 0 auto;
+}
+
+.divider {
+    width: 110px;
+    height: 1px;
+    margin: 18px auto;
+    background: linear-gradient(90deg, transparent, var(--dorado), transparent);
+    position: relative;
+}
+.divider::after {
+    content: '';
+    position: absolute;
+    top: -2.5px;
+    left: 50%;
+    width: 5px;
+    height: 5px;
+    margin-left: -2.5px;
+    border-radius: 50%;
+    background: var(--dorado-claro);
+    box-shadow: 0 0 10px 3px rgba(217, 183, 121, 0.6);
+}
+
+/* ================= TARJETAS ================= */
+.card {
+    background: linear-gradient(160deg, rgba(20, 48, 74, 0.78) 0%, rgba(8, 22, 38, 0.88) 100%);
+    border: 1px solid var(--borde);
+    border-radius: 22px;
+    padding: 24px 20px;
+    margin-bottom: 20px;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: 0 20px 55px rgba(0, 0, 0, 0.55),
+                inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+label {
+    display: block;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.68rem;
+    font-weight: 500;
+    letter-spacing: 2.2px;
+    text-transform: uppercase;
+    color: var(--dorado);
+    margin-bottom: 8px;
+}
+
+input[type="text"], textarea {
+    width: 100%;
+    padding: 13px 15px;
+    border: 1px solid rgba(217, 183, 121, 0.28);
+    border-radius: 13px;
+    font-size: 1rem;
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    color: var(--blanco);
+    background: rgba(255, 255, 255, 0.05);
+    outline: none;
+    transition: border-color .25s, box-shadow .25s, background .25s;
+    margin-bottom: 18px;
+}
+input[type="text"]::placeholder, textarea::placeholder {
+    color: #61778f;
+    font-style: italic;
+}
+input[type="text"]:focus, textarea:focus {
+    border-color: rgba(217, 183, 121, 0.85);
+    background: rgba(255, 255, 255, 0.075);
+    box-shadow: 0 0 0 3px rgba(217, 183, 121, 0.14),
+                0 0 18px rgba(217, 183, 121, 0.18);
+}
+textarea { resize: vertical; min-height: 76px; }
+
+/* ================= ZONA DE SUBIDA ================= */
+.upload-zone {
+    border: 1.5px dashed rgba(217, 183, 121, 0.5);
+    border-radius: 18px;
+    padding: 32px 20px;
+    text-align: center;
+    background: rgba(255, 255, 255, 0.03);
+    cursor: pointer;
+    transition: all .25s;
+    margin-bottom: 16px;
+}
+.upload-zone:hover, .upload-zone.dragover {
+    background: rgba(217, 183, 121, 0.09);
+    border-color: rgba(240, 217, 168, 0.9);
+    box-shadow: 0 0 26px rgba(217, 183, 121, 0.22);
+    transform: scale(1.01);
+}
+.upload-zone .icon {
+    font-size: 2.3rem;
+    margin-bottom: 8px;
+    filter: drop-shadow(0 0 14px rgba(217, 183, 121, 0.55));
+}
+.upload-zone .text {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.86rem;
+    font-weight: 500;
+    letter-spacing: 0.6px;
+    color: var(--dorado-claro);
+}
+.upload-zone .sub {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.7rem;
+    font-weight: 300;
+    color: var(--texto-suave);
+    margin-top: 6px;
+}
+input[type="file"] { display: none; }
+
+/* ================= PREVIEW ================= */
+.preview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: 8px;
+    margin-bottom: 16px;
+}
+.preview-item {
+    position: relative;
+    aspect-ratio: 1;
+    border-radius: 12px;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(217, 183, 121, 0.22);
+}
+.preview-item img, .preview-item video { width: 100%; height: 100%; object-fit: cover; }
+.preview-item .remove {
+    position: absolute;
+    top: 4px; right: 4px;
+    background: rgba(190, 60, 70, 0.92);
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    width: 22px; height: 22px;
+    cursor: pointer;
+    font-size: 11px;
+    display: flex; align-items: center; justify-content: center;
+    line-height: 1;
+}
+.preview-item .badge {
+    position: absolute;
+    bottom: 4px; left: 4px;
+    background: rgba(6, 18, 30, 0.78);
+    border: 1px solid rgba(217, 183, 121, 0.35);
+    color: var(--dorado-claro);
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.55rem;
+    padding: 2px 6px;
+    border-radius: 5px;
+}
+
+/* ================= BOTÓN ================= */
+.btn {
+    width: 100%;
+    padding: 15px;
+    border: none;
+    border-radius: 14px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all .25s;
+}
+.btn-primary {
+    background: linear-gradient(135deg, var(--dorado-claro) 0%, var(--dorado) 45%, var(--dorado-oscuro) 100%);
+    color: #0a1a2b;
+    box-shadow: 0 10px 30px rgba(217, 183, 121, 0.32),
+                inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+.btn-primary:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 14px 38px rgba(217, 183, 121, 0.45),
+                inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+.btn-primary:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* ================= PROGRESO ================= */
+.progress-bar {
+    width: 100%;
+    height: 5px;
+    background: rgba(255, 255, 255, 0.09);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 12px;
+    display: none;
+}
+.progress-bar.active { display: block; }
+.progress-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--dorado-oscuro), var(--dorado-claro));
+    box-shadow: 0 0 12px rgba(217, 183, 121, 0.7);
+    transition: width .3s;
+}
+
+/* ================= MENSAJES DE ESTADO ================= */
+.status-msg {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.74rem;
+    font-weight: 400;
+    text-align: center;
+    padding: 11px;
+    border-radius: 11px;
+    margin-bottom: 12px;
+    display: none;
+    word-break: break-word;
+    line-height: 1.5;
+}
+.status-msg.success {
+    background: rgba(60, 160, 110, 0.16);
+    border: 1px solid rgba(90, 210, 150, 0.4);
+    color: #8fe7bb;
+    display: block;
+}
+.status-msg.error {
+    background: rgba(200, 70, 80, 0.16);
+    border: 1px solid rgba(230, 110, 120, 0.4);
+    color: #ffa8b0;
+    display: block;
+}
+.status-msg.info {
+    background: rgba(90, 150, 220, 0.16);
+    border: 1px solid rgba(130, 185, 240, 0.4);
+    color: #a8ccf5;
+    display: block;
+}
+
+/* ================= GALERÍA ================= */
+.gallery-title {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.74rem;
+    font-weight: 500;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--dorado-claro);
+    text-align: center;
+    margin: 30px 0 14px;
+    text-shadow: 0 0 16px rgba(217, 183, 121, 0.45);
+}
+.gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+    gap: 9px;
+    margin-top: 10px;
+}
+.gallery-item {
+    position: relative;
+    aspect-ratio: 1;
+    border-radius: 12px;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(217, 183, 121, 0.22);
+    cursor: pointer;
+    transition: transform .25s, box-shadow .25s, border-color .25s;
+}
+.gallery-item:hover {
+    transform: scale(1.04);
+    border-color: rgba(240, 217, 168, 0.75);
+    box-shadow: 0 0 24px rgba(217, 183, 121, 0.35);
+}
+.gallery-item img, .gallery-item video { width: 100%; height: 100%; object-fit: cover; }
+.gallery-item .guest {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    background: linear-gradient(transparent, rgba(3, 10, 18, 0.88));
+    color: var(--dorado-claro);
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.6rem;
+    letter-spacing: 0.4px;
+    padding: 14px 6px 5px;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+}
+.empty-gallery {
+    text-align: center;
+    color: var(--texto-suave);
+    font-style: italic;
+    padding: 24px 10px;
+    font-size: 1rem;
+}
+
+/* ================= LIGHTBOX ================= */
+.lightbox {
+    position: fixed;
+    inset: 0;
+    background: rgba(3, 9, 16, 0.96);
+    backdrop-filter: blur(6px);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    padding: 20px;
+}
+.lightbox.active { display: flex; }
+.lightbox img, .lightbox video {
+    max-width: 100%;
+    max-height: 85vh;
+    border-radius: 10px;
+    box-shadow: 0 0 60px rgba(217, 183, 121, 0.28);
+}
+.lightbox .close {
+    position: absolute;
+    top: 20px; right: 20px;
+    background: rgba(217, 183, 121, 0.14);
+    border: 1px solid rgba(217, 183, 121, 0.45);
+    color: var(--dorado-claro);
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    line-height: 1;
+    transition: background .2s;
+}
+.lightbox .close:hover { background: rgba(217, 183, 121, 0.3); }
+.lightbox .caption {
+    position: absolute;
+    bottom: 22px; left: 20px; right: 20px;
+    color: var(--dorado-claro);
+    text-align: center;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.78rem;
+    letter-spacing: 0.6px;
+    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.9);
+}
+
+@media (max-width: 400px) {
+    .header h1 { font-size: 2.6rem; }
+    .emblem { width: 130px; height: 130px; }
+}
+</style>
 </head>
 <body>
 
-    <!-- 1. Contenedor donde JavaScript inyecta los pétalos -->
-    <div id="contenedor-petalos"></div>
+<!-- Pétalos y destellos -->
+<div id="petals"></div>
 
-    <!-- 2. Contenido visual de la invitación -->
-    <div class="contenido">
-        
-        <div class="grafico">
-            <div class="anillo"></div>
-            <div class="anillo"></div>
-            <div class="anillo"></div>
-            <div class="punto-central"></div>
+<div class="container">
+    <div class="header">
+        <div class="emblem">
+            <span class="halo"></span>
+            <span class="orbita a"></span>
+            <span class="orbita b"></span>
+            <span class="nucleo"></span>
+            <span class="punto p1"></span>
+            <span class="punto p2"></span>
+            <span class="punto p3"></span>
+            <span class="punto p4"></span>
+            <span class="punto p5"></span>
+            <span class="punto p6"></span>
         </div>
 
-        <div class="subtitulo">Boda & Bautizo</div>
-        
-        <div class="nombres">
-            María del Carmen <span class="ampersand">&</span><br>
-            Jesús Eduardo
-        </div>
-        
-        <div class="fecha">10 · OCTUBRE · 2026</div>
-        
+        <h1>Nuestra Boda</h1>
+        <div class="pill">Comparte tus fotos</div>
+        <div class="divider"></div>
+        <p>Comparte los momentos que captures<br>y ayúdanos a guardar este día tan especial</p>
     </div>
 
-    <!-- 3. JavaScript para crear la caída de pétalos -->
-    <script>
-        const contenedor = document.getElementById('contenedor-petalos');
-        const cantidadPetalos = 50; // Puedes subir o bajar este número
+    <div class="card">
+        <label for="guestName">👤 Tu nombre *</label>
+        <input type="text" id="guestName" placeholder="Ej. María González" maxlength="60" />
 
-        function crearPetalo() {
-            const petalo = document.createElement('div');
-            petalo.classList.add('petalo');
+        <label for="guestMessage">💌 Dedicatoria (opcional)</label>
+        <textarea id="guestMessage" placeholder="Un mensaje para los novios..." maxlength="300"></textarea>
 
-            // Tamaño aleatorio
-            const tamaño = Math.random() * 20 + 10;
-            petalo.style.width = `${tamaño}px`;
-            petalo.style.height = `${tamaño}px`;
+        <div class="upload-zone" id="uploadZone">
+            <div class="icon">📷</div>
+            <div class="text">Toca para subir fotos o videos</div>
+            <div class="sub">Puedes seleccionar varios a la vez (máx. 10)</div>
+        </div>
+        <input type="file" id="fileInput" accept="image/*,video/*" multiple />
 
-            // Posición inicial horizontal aleatoria
-            petalo.style.left = `${Math.random() * 100}vw`;
+        <div class="preview-grid" id="previewGrid"></div>
 
-            // Duración de la caída (entre 8 y 18 segundos)
-            const duracion = Math.random() * 10 + 8;
-            petalo.style.animationDuration = `${duracion}s`;
+        <div class="progress-bar" id="progressBar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
 
-            // Retraso para que no caigan todos al mismo tiempo
-            const retraso = Math.random() * 10;
-            petalo.style.animationDelay = `${retraso}s`;
+        <div class="status-msg" id="statusMsg"></div>
 
-            // Rotación inicial
-            petalo.style.transform = `rotate(${Math.random() * 360}deg)`;
+        <button class="btn btn-primary" id="uploadBtn" disabled>
+            ✨ Compartir con los novios
+        </button>
+    </div>
 
-            contenedor.appendChild(petalo);
+    <div class="gallery-title">📸 Álbum de la boda</div>
+    <div class="card">
+        <div class="gallery" id="gallery"></div>
+        <div class="empty-gallery" id="emptyGallery">Aún no hay fotos. ¡Sé el primero en compartir!</div>
+    </div>
+</div>
+
+<div class="lightbox" id="lightbox">
+    <button class="close" id="lightboxClose">✕</button>
+    <div id="lightboxContent"></div>
+    <div class="caption" id="lightboxCaption"></div>
+</div>
+
+<script>
+(function() {
+    const SUPABASE_URL = "https://zavonkfpunwwqjliojtb.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_MEkptp0YhHcsTLDPoIl0Nw_s3kMyYo9";
+    const BUCKET = "wedding-photos";
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50 MB
+    const MAX_FILES = 10;
+
+    /* ================= PÉTALOS CAYENDO ================= */
+    (function crearPetalos() {
+        const cont = document.getElementById('petals');
+        const NUM_PETALOS = 24;
+        const NUM_DESTELLOS = 26;
+
+        for (let i = 0; i < NUM_PETALOS; i++) {
+            const p = document.createElement('span');
+            p.className = 'petal';
+
+            const size = 9 + Math.random() * 26;
+            const alto = size * (0.58 + Math.random() * 0.5);
+
+            p.style.width  = size + 'px';
+            p.style.height = alto + 'px';
+            p.style.left   = (Math.random() * 100) + 'vw';
+            p.style.animationDuration = (11 + Math.random() * 15).toFixed(2) + 's';
+            p.style.animationDelay    = (-Math.random() * 24).toFixed(2) + 's';
+            p.style.setProperty('--op', (0.22 + Math.random() * 0.5).toFixed(2));
+            p.style.filter = 'blur(' + (Math.random() * 3).toFixed(1) + 'px)';
+
+            // Variación de forma para que parezcan pétalos / alas
+            const r = () => (45 + Math.random() * 30).toFixed(0) + '%';
+            p.style.borderRadius = `${r()} ${r()} ${r()} ${r()} / ${r()} ${r()} ${r()} ${r()}`;
+
+            cont.appendChild(p);
         }
 
-        // Generar los pétalos iniciales
-        for (let i = 0; i < cantidadPetalos; i++) {
-            crearPetalo();
+        for (let i = 0; i < NUM_DESTELLOS; i++) {
+            const s = document.createElement('span');
+            s.className = 'sparkle';
+            const size = 1.5 + Math.random() * 3;
+            s.style.width  = size + 'px';
+            s.style.height = size + 'px';
+            s.style.left   = (Math.random() * 100) + 'vw';
+            s.style.top    = (Math.random() * 100) + 'vh';
+            s.style.animationDelay = (Math.random() * 4).toFixed(2) + 's';
+            s.style.animationDuration = (3 + Math.random() * 3).toFixed(2) + 's';
+            cont.appendChild(s);
+        }
+    })();
+
+    /* ================= REFERENCIAS ================= */
+    const guestNameEl = document.getElementById('guestName');
+    const guestMessageEl = document.getElementById('guestMessage');
+    const uploadZone = document.getElementById('uploadZone');
+    const fileInput = document.getElementById('fileInput');
+    const previewGrid = document.getElementById('previewGrid');
+    const uploadBtn = document.getElementById('uploadBtn');
+    const progressBar = document.getElementById('progressBar');
+    const progressFill = document.getElementById('progressFill');
+    const statusMsg = document.getElementById('statusMsg');
+    const galleryEl = document.getElementById('gallery');
+    const emptyGallery = document.getElementById('emptyGallery');
+    const lightbox = document.getElementById('lightbox');
+    const lightboxContent = document.getElementById('lightboxContent');
+    const lightboxCaption = document.getElementById('lightboxCaption');
+    const lightboxClose = document.getElementById('lightboxClose');
+
+    let selectedFiles = [];
+
+    // ===== SELECCIÓN DE ARCHIVOS =====
+    uploadZone.addEventListener('click', () => fileInput.click());
+
+    uploadZone.addEventListener('dragover', (e) => { e.preventDefault(); uploadZone.classList.add('dragover'); });
+    uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('dragover'));
+    uploadZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadZone.classList.remove('dragover');
+        handleFiles(e.dataTransfer.files);
+    });
+
+    fileInput.addEventListener('change', (e) => {
+        handleFiles(e.target.files);
+        fileInput.value = '';
+    });
+
+    function handleFiles(files) {
+        const nuevos = Array.from(files);
+        for (const f of nuevos) {
+            if (selectedFiles.length >= MAX_FILES) {
+                showStatus(`Máximo ${MAX_FILES} archivos por envío.`, 'error');
+                break;
+            }
+            const isImage = f.type.startsWith('image/');
+            const isVideo = f.type.startsWith('video/');
+            if (!isImage && !isVideo) continue;
+            if (f.size > MAX_FILE_SIZE) {
+                showStatus(`"${f.name}" excede los 50 MB.`, 'error');
+                continue;
+            }
+            const yaExiste = selectedFiles.some(existing => existing.name === f.name && existing.size === f.size);
+            if (!yaExiste) selectedFiles.push(f);
+        }
+        renderPreview();
+        updateButton();
+    }
+
+    function renderPreview() {
+        previewGrid.innerHTML = '';
+        selectedFiles.forEach((file, i) => {
+            const item = document.createElement('div');
+            item.className = 'preview-item';
+            const isVideo = file.type.startsWith('video/');
+            const url = URL.createObjectURL(file);
+            if (isVideo) {
+                item.innerHTML = `<video src="${url}" muted></video><span class="badge">🎥 Video</span>`;
+            } else {
+                item.innerHTML = `<img src="${url}" alt="" /><span class="badge">📷 Foto</span>`;
+            }
+            const removeBtn = document.createElement('button');
+            removeBtn.className = 'remove';
+            removeBtn.textContent = '✕';
+            removeBtn.onclick = (e) => {
+                e.stopPropagation();
+                URL.revokeObjectURL(url);
+                selectedFiles.splice(i, 1);
+                renderPreview();
+                updateButton();
+            };
+            item.appendChild(removeBtn);
+            previewGrid.appendChild(item);
+        });
+    }
+
+    function updateButton() {
+        uploadBtn.disabled = selectedFiles.length === 0 || !guestNameEl.value.trim();
+    }
+
+    guestNameEl.addEventListener('input', updateButton);
+
+    // ===== SUBIDA DE ARCHIVOS =====
+    uploadBtn.addEventListener('click', async () => {
+        const guestName = guestNameEl.value.trim();
+        if (!guestName) { showStatus('Por favor escribe tu nombre.', 'error'); return; }
+        if (selectedFiles.length === 0) { showStatus('Selecciona al menos un archivo.', 'error'); return; }
+
+        uploadBtn.disabled = true;
+        progressBar.classList.add('active');
+        progressFill.style.width = '0%';
+        showStatus('Subiendo archivos...', 'info');
+
+        const total = selectedFiles.length;
+        let completados = 0;
+        const errores = [];
+        const archivosSubidos = [...selectedFiles];
+
+        for (const file of archivosSubidos) {
+            try {
+                await subirArchivo(file, guestName);
+                completados++;
+                progressFill.style.width = `${(completados / total) * 100}%`;
+            } catch (err) {
+                console.error('Error al subir:', file.name, err);
+                errores.push(`${file.name} → ${err.message || 'Error desconocido'}`);
+            }
         }
 
-        // (Opcional) Si quieres que salgan pétalos nuevos constantemente:
-        // setInterval(crearPetalo, 500); 
-    </script>
+        if (errores.length === 0) {
+            showStatus(`¡Gracias ${guestName}! ${completados} archivo(s) compartido(s) 💕`, 'success');
+            selectedFiles = [];
+            renderPreview();
+            guestMessageEl.value = '';
+        } else {
+            showStatus(`Error: ${errores.join(' | ')}`, 'error');
+            selectedFiles = selectedFiles.filter(f => errores.some(e => e.startsWith(f.name)));
+            renderPreview();
+        }
 
+        setTimeout(() => {
+            progressBar.classList.remove('active');
+            progressFill.style.width = '0%';
+        }, 1500);
+
+        updateButton();
+        cargarGaleria();
+    });
+
+    async function subirArchivo(file, guestName) {
+        const timestamp = Date.now();
+        const random = Math.random().toString(36).slice(2, 8);
+        const safeName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+        const path = `${timestamp}_${random}_${safeName}`;
+
+        // 1) Subir a Storage
+        const { error: uploadError } = await supabase.storage
+            .from(BUCKET)
+            .upload(path, file, {
+                cacheControl: '3600',
+                upsert: false,
+                contentType: file.type
+            });
+
+        if (uploadError) {
+            throw new Error(`Storage: ${uploadError.message}`);
+        }
+
+        // 2) Obtener URL pública
+        const { data: urlData } = supabase.storage.from(BUCKET).getPublicUrl(path);
+
+        // 3) Insertar registro en la tabla
+        const mediaType = file.type.startsWith('video/') ? 'video' : 'photo';
+        const { error: dbError } = await supabase
+            .from('wedding_media')
+            .insert({
+                guest_name: guestName,
+                message: guestMessageEl.value.trim() || null,
+                media_type: mediaType,
+                file_url: urlData.publicUrl,
+                file_path: path,
+                file_name: file.name,
+                file_size: file.size,
+                mime_type: file.type
+            });
+
+        if (dbError) {
+            await supabase.storage.from(BUCKET).remove([path]);
+            throw new Error(`Base de datos: ${dbError.message}`);
+        }
+    }
+
+    function showStatus(msg, type) {
+        statusMsg.textContent = msg;
+        statusMsg.className = `status-msg ${type}`;
+    }
+
+    // ===== GALERÍA =====
+    async function cargarGaleria() {
+        const { data, error } = await supabase
+            .from('wedding_media')
+            .select('*')
+            .order('created_at', { ascending: false })
+            .limit(60);
+
+        if (error) { console.error('Error cargando galería:', error); return; }
+
+        if (!data || data.length === 0) {
+            galleryEl.innerHTML = '';
+            emptyGallery.style.display = 'block';
+            return;
+        }
+
+        emptyGallery.style.display = 'none';
+        galleryEl.innerHTML = data.map(item => {
+            const media = item.media_type === 'video'
+                ? `<video src="${item.file_url}" muted preload="metadata"></video>`
+                : `<img src="${item.file_url}" loading="lazy" alt="" />`;
+            return `
+                <div class="gallery-item"
+                     data-url="${escapeHtml(item.file_url)}"
+                     data-type="${escapeHtml(item.media_type)}"
+                     data-guest="${escapeHtml(item.guest_name)}"
+                     data-msg="${escapeHtml(item.message || '')}">
+                    ${media}
+                    <span class="guest">${escapeHtml(item.guest_name)}</span>
+                </div>`;
+        }).join('');
+
+        document.querySelectorAll('.gallery-item').forEach(el => {
+            el.addEventListener('click', () => {
+                abrirLightbox(el.dataset.url, el.dataset.type, el.dataset.guest, el.dataset.msg);
+            });
+        });
+    }
+
+    function escapeHtml(s) {
+        return String(s).replace(/[&<>"']/g, c => ({
+            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+        }[c]));
+    }
+
+    function abrirLightbox(url, type, guest, msg) {
+        lightboxContent.innerHTML = type === 'video'
+            ? `<video src="${url}" controls autoplay></video>`
+            : `<img src="${url}" alt="" />`;
+        lightboxCaption.textContent = msg ? `${guest} — "${msg}"` : guest;
+        lightbox.classList.add('active');
+    }
+
+    lightboxClose.addEventListener('click', () => {
+        lightbox.classList.remove('active');
+        lightboxContent.innerHTML = '';
+    });
+
+    lightbox.addEventListener('click', (e) => {
+        if (e.target === lightbox) {
+            lightbox.classList.remove('active');
+            lightboxContent.innerHTML = '';
+        }
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && lightbox.classList.contains('active')) {
+            lightbox.classList.remove('active');
+            lightboxContent.innerHTML = '';
+        }
+    });
+
+    // ===== REALTIME =====
+    supabase
+        .channel('wedding-media')
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'wedding_media' },
+            () => cargarGaleria())
+        .subscribe();
+
+    // ===== INICIO =====
+    cargarGaleria();
+})();
+</script>
 </body>
 </html>
