@@ -1,1353 +1,792 @@
-```html
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Control de Ventas 1-300 | Supabase</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
-    </script>
-    <style>
-        /* ===== ESTILOS ===== */
-        :root {
-            --bg: #0b0f14;
-            --panel-bg: #131920;
-            --border: #2a323d;
-            --text: #e6edf3;
-            --text-secondary: #8b949e;
-            --green-bright: #3fb950;
-            --green-bg: #1a3a1f;
-            --green-border: #2ea043;
-            --gray-bg: #1c1c20;
-            --gray-border: #3a3a3e;
-            --accent: #58a6ff;
-            --danger: #f85149;
-            --card-radius: 8px;
-            --modal-bg: #1c2128;
-            --modal-overlay: rgba(0, 0, 0, 0.7);
-            --yellow-bg: #3d2a1a;
-            --yellow-border: #a77a3a;
-        }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>💍 Comparte tus fotos - Nuestra Boda</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root {
+    --rosa: #e8b4b8;
+    --rosa-oscuro: #c98b90;
+    --dorado: #d4af7a;
+    --crema: #fdf6f0;
+    --texto: #3a2e2e;
+    --texto-suave: #8a7a7a;
+}
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        body {
-            background: var(--bg);
-            font-family: 'Segoe UI', 'Inter', system-ui, sans-serif;
-            color: var(--text);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 16px;
-            background-image: radial-gradient(ellipse at 20% 30%, rgba(63, 185, 80, 0.04) 0%, transparent 50%),
-                radial-gradient(ellipse at 80% 70%, rgba(63, 185, 80, 0.03) 0%, transparent 50%);
-        }
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
 
-        .dashboard {
-            width: 100%;
-            max-width: 1300px;
-            background: var(--panel-bg);
-            border-radius: 20px;
-            border: 1px solid var(--border);
-            padding: 20px 24px 24px;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
-        }
+body {
+    font-family: 'Georgia', 'Playfair Display', serif;
+    background: linear-gradient(135deg, #fdf6f0 0%, #f5e6e0 100%);
+    color: var(--texto);
+    min-height: 100vh;
+    padding: 20px 16px 60px;
+}
 
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 12px;
-            margin-bottom: 16px;
-            padding-bottom: 14px;
-            border-bottom: 1px solid var(--border);
-        }
-        .header-left h1 {
-            font-size: 1.5rem;
-            font-weight: 700;
-            letter-spacing: -0.3px;
-        }
-        .stats {
-            display: flex;
-            gap: 20px;
-            flex-wrap: wrap;
-            align-items: center;
-            font-size: 0.9rem;
-        }
-        .stat-item {
-            background: #1a1f27;
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 8px 16px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .stat-item .label {
-            color: #8b949e;
-            font-size: 0.8rem;
-        }
-        .stat-item .value {
-            font-size: 1.3rem;
-            font-weight: 700;
-            color: var(--green-bright);
-            font-variant-numeric: tabular-nums;
-        }
-        .timestamp {
-            font-family: 'SF Mono', 'Consolas', monospace;
-            font-size: 0.8rem;
-            color: #7d8590;
-            margin-left: auto;
-        }
+.container {
+    max-width: 560px;
+    margin: 0 auto;
+}
 
-        .controls {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-bottom: 16px;
-            align-items: center;
-        }
-        .btn {
-            background: #1c2129;
-            border: 1px solid var(--border);
-            color: #c9d1d9;
-            padding: 8px 16px;
-            border-radius: 8px;
-            font-size: 0.82rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            user-select: none;
-        }
-        .btn:hover {
-            background: #242b35;
-            border-color: #4a5568;
-            color: #fff;
-            transform: translateY(-1px);
-        }
-        .btn:active {
-            transform: scale(0.97);
-        }
-        .btn.accent {
-            background: #1a3a2a;
-            border-color: #2ea043;
-            color: #9fddb0;
-        }
-        .btn.accent:hover {
-            background: #1f4a2f;
-            border-color: #3fb950;
-            color: #fff;
-        }
-        .btn.danger {
-            background: #2d1a1a;
-            border-color: #5a2e2e;
-            color: #f0a0a0;
-        }
-        .btn.danger:hover {
-            background: #3d2020;
-            border-color: #7a3a3a;
-            color: #fff;
-        }
-        .btn.warning {
-            background: #3d2a1a;
-            border-color: #7a5a2e;
-            color: #f0d0a0;
-        }
-        .btn.warning:hover {
-            background: #4d3a2a;
-            border-color: #9a7a3a;
-            color: #fff;
-        }
-        .btn.admin {
-            background: #1a2a3d;
-            border-color: #2a5a7a;
-            color: #a0c0f0;
-        }
-        .btn.admin:hover {
-            background: #2a3a5d;
-            border-color: #4a7a9a;
-            color: #fff;
-        }
-        .separator {
-            width: 1px;
-            height: 24px;
-            background: #2d333b;
-            margin: 0 6px;
-        }
+/* ===== HEADER ===== */
+.header {
+    text-align: center;
+    margin-bottom: 32px;
+    padding-top: 20px;
+}
 
-        /* Indicador de conexión */
-        .status-container {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 0.78rem;
-            color: #8b949e;
-            margin-left: auto;
-            padding: 4px 12px;
-            background: #1a1f27;
-            border-radius: 20px;
-            border: 1px solid var(--border);
-        }
-        .status-dot {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            display: inline-block;
-            flex-shrink: 0;
-            transition: background 0.3s, box-shadow 0.3s;
-        }
-        .status-dot.connecting {
-            background: #8b949e;
-            box-shadow: 0 0 6px #8b949e;
-            animation: pulse-dot 1s infinite;
-        }
-        .status-dot.online {
-            background: #3fb950;
-            box-shadow: 0 0 10px rgba(63, 185, 80, 0.5);
-        }
-        .status-dot.offline {
-            background: #f85149;
-            box-shadow: 0 0 10px rgba(248, 81, 73, 0.5);
-        }
-        @keyframes pulse-dot {
-            0% {
-                opacity: 0.4;
-                transform: scale(0.9);
-            }
-            50% {
-                opacity: 1;
-                transform: scale(1.1);
-            }
-            100% {
-                opacity: 0.4;
-                transform: scale(0.9);
-            }
-        }
+.header .emoji {
+    font-size: 3rem;
+    margin-bottom: 8px;
+    animation: float 3s ease-in-out infinite;
+}
 
-        .legend {
-            display: flex;
-            gap: 16px;
-            font-size: 0.78rem;
-            color: #8b949e;
-            align-items: center;
-        }
-        .legend span {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-        .legend-dot {
-            width: 12px;
-            height: 12px;
-            border-radius: 3px;
-            border: 1px solid transparent;
-        }
-        .legend-dot.green {
-            background: var(--green-bg);
-            border-color: var(--green-border);
-        }
-        .legend-dot.gray {
-            background: var(--gray-bg);
-            border-color: var(--gray-border);
-        }
-        .legend-dot.yellow {
-            background: var(--yellow-bg);
-            border-color: var(--yellow-border);
-        }
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+}
 
-        .ticket-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(62px, 1fr));
-            gap: 7px;
-            max-height: 55vh;
-            overflow-y: auto;
-            padding-right: 4px;
-        }
-        .ticket-grid::-webkit-scrollbar {
-            width: 7px;
-        }
-        .ticket-grid::-webkit-scrollbar-track {
-            background: #0f1319;
-            border-radius: 10px;
-        }
-        .ticket-grid::-webkit-scrollbar-thumb {
-            background: #2a3039;
-            border-radius: 10px;
-        }
+.header h1 {
+    font-size: 1.9rem;
+    font-weight: 400;
+    letter-spacing: 2px;
+    color: var(--rosa-oscuro);
+    margin-bottom: 8px;
+}
 
-        .ticket-cell {
-            background: var(--gray-bg);
-            border: 2px solid var(--gray-border);
-            border-radius: var(--card-radius);
-            padding: 8px 4px;
-            text-align: center;
-            cursor: pointer;
-            transition: background 0.2s, border-color 0.2s, box-shadow 0.2s, transform 0.2s;
-            position: relative;
-            overflow: hidden;
-            min-height: 50px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 2px;
-            user-select: none;
-            font-weight: 600;
-            font-size: 0.8rem;
-            color: #6e7681;
-        }
-        .ticket-cell.sold {
-            background: var(--green-bg);
-            border-color: var(--green-border);
-            color: #fff;
-            box-shadow: 0 2px 10px rgba(63, 185, 80, 0.3);
-        }
-        .ticket-cell.pending {
-            background: var(--yellow-bg);
-            border-color: var(--yellow-border);
-            color: #fff;
-            box-shadow: 0 2px 10px rgba(167, 122, 58, 0.3);
-        }
-        .ticket-cell.pagado {
-            background: var(--green-bg);
-            border-color: #4dda5a;
-            color: #fff;
-            box-shadow: 0 2px 10px rgba(63, 185, 80, 0.5);
-        }
-        .ticket-cell:hover {
-            transform: translateY(-2px);
-            z-index: 2;
-        }
-        .ticket-cell.sold:hover {
-            border-color: #4dda5a;
-            box-shadow: 0 6px 24px rgba(63, 185, 80, 0.6);
-        }
-        .ticket-cell.pending:hover {
-            border-color: #c99a4a;
-            box-shadow: 0 6px 24px rgba(167, 122, 58, 0.6);
-        }
-        .ticket-cell.available:hover {
-            border-color: #5a5a62;
-            background: #25252b;
-            color: #aaa;
-        }
-        .ticket-number {
-            font-size: 0.8rem;
-            font-weight: 700;
-            z-index: 1;
-        }
-        .ticket-status {
-            font-size: 0.55rem;
-            z-index: 1;
-            font-weight: 500;
-            letter-spacing: 0.2px;
-        }
-        .ticket-cell.sold .ticket-status {
-            color: #b8e6c0;
-        }
-        .ticket-cell.pending .ticket-status {
-            color: #f0d0a0;
-        }
-        .ticket-cell.pagado .ticket-status {
-            color: #b8e6c0;
-        }
-        .ticket-cell.available .ticket-status {
-            color: #555;
-        }
+.header p {
+    font-size: 0.95rem;
+    color: var(--texto-suave);
+    font-style: italic;
+    line-height: 1.5;
+}
 
-        /* Modal */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: var(--modal-overlay);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            visibility: hidden;
-            opacity: 0;
-            transition: opacity 0.25s ease, visibility 0.25s;
-        }
-        .modal-overlay.active {
-            visibility: visible;
-            opacity: 1;
-        }
-        .modal {
-            background: var(--modal-bg);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 24px;
-            width: 90%;
-            max-width: 420px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8);
-            color: var(--text);
-        }
-        .modal h3 {
-            margin-bottom: 16px;
-            font-size: 1.2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .modal h3 small {
-            font-size: 0.8rem;
-            font-weight: 400;
-            color: #8b949e;
-        }
-        .modal label {
-            display: block;
-            margin-bottom: 6px;
-            font-size: 0.85rem;
-            color: #8b949e;
-        }
-        .modal select,
-        .modal input[type="number"] {
-            width: 100%;
-            padding: 10px 12px;
-            background: #0d1117;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            color: #e6edf3;
-            font-size: 0.9rem;
-            margin-bottom: 14px;
-            outline: none;
-        }
-        .modal input[type="number"] {
-            -moz-appearance: textfield;
-        }
-        .modal input[type="number"]::-webkit-outer-spin-button,
-        .modal input[type="number"]::-webkit-inner-spin-button {
-            -webkit-appearance: none;
-            margin: 0;
-        }
-        .modal .info-line {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 8px;
-            font-size: 0.95rem;
-            padding: 4px 0;
-        }
-        .modal .info-line .label {
-            color: #8b949e;
-        }
-        .modal .info-line .value {
-            font-weight: 600;
-        }
-        .modal .info-line .value.pending {
-            color: #f0d0a0;
-        }
-        .modal .info-line .value.pagado {
-            color: #3fb950;
-        }
-        .modal .remaining {
-            font-weight: 700;
-            font-size: 1.1rem;
-            margin: 6px 0 12px;
-            text-align: center;
-        }
-        .modal-actions {
-            display: flex;
-            gap: 10px;
-            justify-content: flex-end;
-            flex-wrap: wrap;
-            margin-top: 10px;
-        }
-        .modal-actions .btn {
-            min-width: 80px;
-            justify-content: center;
-        }
-        .modal-actions .btn.danger {
-            margin-right: auto;
-        }
+.divider {
+    width: 80px;
+    height: 1px;
+    background: var(--dorado);
+    margin: 16px auto;
+}
 
-        /* Modal admin */
-        .admin-stats {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin: 16px 0;
-        }
-        .admin-stat {
-            background: #0d1117;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 12px;
-            text-align: center;
-        }
-        .admin-stat .number {
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: var(--green-bright);
-        }
-        .admin-stat .label {
-            font-size: 0.75rem;
-            color: #8b949e;
-            display: block;
-            margin-top: 4px;
-        }
-        .admin-debt-list {
-            max-height: 150px;
-            overflow-y: auto;
-            border-top: 1px solid var(--border);
-            padding-top: 10px;
-            margin-top: 10px;
-            font-size: 0.85rem;
-        }
-        .admin-debt-list .debt-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 4px 0;
-            border-bottom: 1px solid #1a1f27;
-        }
-        .admin-debt-list .debt-item .num {
-            font-weight: 600;
-        }
-        .admin-debt-list .debt-item .amount {
-            color: #f0d0a0;
-        }
+/* ===== CARD ===== */
+.card {
+    background: #fff;
+    border-radius: 20px;
+    padding: 24px 20px;
+    box-shadow: 0 10px 40px rgba(200, 150, 150, 0.15);
+    margin-bottom: 20px;
+    border: 1px solid #f5e0e0;
+}
 
-        [data-tooltip]:hover::after {
-            content: attr(data-tooltip);
-            position: absolute;
-            bottom: 110%;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #1c2129;
-            border: 1px solid var(--border);
-            padding: 6px 10px;
-            border-radius: 6px;
-            font-size: 0.7rem;
-            white-space: nowrap;
-            pointer-events: none;
-            z-index: 3;
-            color: #c9d1d9;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-        }
+/* ===== FORM ===== */
+label {
+    display: block;
+    font-size: 0.85rem;
+    color: var(--texto-suave);
+    margin-bottom: 6px;
+    letter-spacing: 0.5px;
+    font-family: 'Segoe UI', sans-serif;
+}
 
-        .disabled {
-            opacity: 0.6;
-            pointer-events: none;
-        }
+input[type="text"],
+textarea {
+    width: 100%;
+    padding: 12px 14px;
+    border: 2px solid #f0e0e0;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-family: 'Segoe UI', sans-serif;
+    color: var(--texto);
+    background: var(--crema);
+    outline: none;
+    transition: border-color 0.2s;
+    margin-bottom: 16px;
+}
 
-        .modal .sub {
-            font-size: 0.75rem;
-            color: #8b949e;
-            margin-top: -8px;
-            margin-bottom: 12px;
-        }
+input[type="text"]:focus,
+textarea:focus {
+    border-color: var(--rosa);
+}
 
-        /* Estilos para el resumen de vendedores en el panel principal */
-        .seller-summary {
-            margin-top: 20px;
-            border-top: 1px solid var(--border);
-            padding-top: 16px;
-            font-size: 0.85rem;
-            background: #0d1117;
-            border-radius: 8px;
-            padding: 12px 16px;
-        }
-        .seller-summary h4 {
-            font-size: 0.95rem;
-            color: #8b949e;
-            margin-bottom: 8px;
-            text-align: center;
-            font-weight: 600;
-        }
-        .seller-summary-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 6px 0;
-            border-bottom: 1px solid #1a1f27;
-        }
-        .seller-summary-item:last-child {
-            border-bottom: none;
-        }
-        .seller-summary-item .seller-name {
-            font-weight: 600;
-            color: #e6edf3;
-        }
-        .seller-summary-item .seller-right {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        .seller-summary-item .seller-ticket-count {
-            font-variant-numeric: tabular-nums;
-            color: #b8b8b8;
-        }
-        .seller-summary-item .seller-total-amount {
-            font-variant-numeric: tabular-nums;
-            color: var(--green-bright);
-            font-weight: 700;
-        }
-    </style>
+textarea {
+    resize: vertical;
+    min-height: 70px;
+}
+
+/* ===== UPLOAD ZONE ===== */
+.upload-zone {
+    border: 2px dashed var(--rosa);
+    border-radius: 16px;
+    padding: 32px 20px;
+    text-align: center;
+    background: var(--crema);
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-bottom: 16px;
+}
+
+.upload-zone:hover,
+.upload-zone.dragover {
+    background: #faeae5;
+    border-color: var(--rosa-oscuro);
+    transform: scale(1.01);
+}
+
+.upload-zone .icon {
+    font-size: 2.5rem;
+    margin-bottom: 8px;
+}
+
+.upload-zone .text {
+    font-size: 0.95rem;
+    color: var(--rosa-oscuro);
+    font-weight: 600;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+.upload-zone .sub {
+    font-size: 0.78rem;
+    color: var(--texto-suave);
+    margin-top: 4px;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+input[type="file"] {
+    display: none;
+}
+
+/* ===== PREVIEW ===== */
+.preview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.preview-item {
+    position: relative;
+    aspect-ratio: 1;
+    border-radius: 10px;
+    overflow: hidden;
+    background: #f0e0e0;
+}
+
+.preview-item img,
+.preview-item video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.preview-item .remove {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    background: rgba(200, 60, 60, 0.9);
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    width: 22px;
+    height: 22px;
+    cursor: pointer;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+
+.preview-item .badge {
+    position: absolute;
+    bottom: 4px;
+    left: 4px;
+    background: rgba(0, 0, 0, 0.6);
+    color: #fff;
+    font-size: 0.6rem;
+    padding: 2px 5px;
+    border-radius: 4px;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+/* ===== BUTTONS ===== */
+.btn {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    font-family: 'Segoe UI', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.5px;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--rosa) 0%, var(--rosa-oscuro) 100%);
+    color: #fff;
+    box-shadow: 0 6px 20px rgba(201, 139, 144, 0.4);
+}
+
+.btn-primary:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(201, 139, 144, 0.5);
+}
+
+.btn-primary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* ===== PROGRESS ===== */
+.progress-bar {
+    width: 100%;
+    height: 6px;
+    background: #f0e0e0;
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 12px;
+    display: none;
+}
+
+.progress-bar.active {
+    display: block;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--rosa) 0%, var(--dorado) 100%);
+    width: 0%;
+    transition: width 0.3s;
+}
+
+/* ===== STATUS ===== */
+.status-msg {
+    font-size: 0.85rem;
+    text-align: center;
+    padding: 10px;
+    border-radius: 10px;
+    margin-bottom: 12px;
+    font-family: 'Segoe UI', sans-serif;
+    display: none;
+}
+
+.status-msg.success {
+    background: #e6f5e6;
+    color: #2d7a2d;
+    display: block;
+}
+
+.status-msg.error {
+    background: #fce8e8;
+    color: #a02020;
+    display: block;
+}
+
+.status-msg.info {
+    background: #e8f0fc;
+    color: #2a5a9a;
+    display: block;
+}
+
+/* ===== GALLERY ===== */
+.gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.gallery-item {
+    position: relative;
+    aspect-ratio: 1;
+    border-radius: 10px;
+    overflow: hidden;
+    background: #f0e0e0;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.gallery-item:hover {
+    transform: scale(1.03);
+}
+
+.gallery-item img,
+.gallery-item video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.gallery-item .guest {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
+    color: #fff;
+    font-size: 0.65rem;
+    padding: 12px 6px 4px;
+    font-family: 'Segoe UI', sans-serif;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.gallery-title {
+    font-size: 1.1rem;
+    color: var(--rosa-oscuro);
+    text-align: center;
+    margin: 24px 0 12px;
+    letter-spacing: 1px;
+}
+
+.empty-gallery {
+    text-align: center;
+    color: var(--texto-suave);
+    font-style: italic;
+    padding: 20px;
+    font-size: 0.9rem;
+}
+
+/* ===== LIGHTBOX ===== */
+.lightbox {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.92);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    padding: 20px;
+}
+
+.lightbox.active {
+    display: flex;
+}
+
+.lightbox img,
+.lightbox video {
+    max-width: 100%;
+    max-height: 85vh;
+    border-radius: 8px;
+}
+
+.lightbox .close {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: rgba(255, 255, 255, 0.15);
+    color: #fff;
+    border: none;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    font-size: 22px;
+    cursor: pointer;
+    line-height: 1;
+}
+
+.lightbox .close:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.lightbox .caption {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    right: 20px;
+    color: #fff;
+    text-align: center;
+    font-family: 'Segoe UI', sans-serif;
+    font-size: 0.9rem;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+}
+</style>
 </head>
 <body>
-    <div class="dashboard">
-        <div class="header">
-            <div class="header-left"><h1>🎟️ Control de Boletos 1-300</h1></div>
-            <div class="stats">
-                <div class="stat-item"><span class="label">🎯 Vendidos</span><span class="value" id="soldCount">0</span></div>
-                <div class="stat-item"><span class="label">💰 Recaudado</span><span class="value" id="totalPaid">0</span></div>
-                <div class="stat-item"><span class="label">⏳ Saldo pendiente</span><span class="value" id="totalPending">0</span></div>
-            </div>
-            <div class="timestamp" id="liveTimestamp">--:--:--</div>
-        </div>
+<div class="container">
 
-        <div class="controls">
-            <button class="btn accent" id="btnSell200">🎫 Vender primeros 200</button>
-            <button class="btn accent" id="btnSell250">🎫 Vender primeros 250</button>
-            <div class="separator"></div>
-            <button class="btn" id="btnSellRandom">🎲 Vender 200 aleatorios</button>
-            <button class="btn danger" id="btnResetAll">🧹 Reiniciar todo</button>
-            <button class="btn" id="btnRefresh">🔄 Refrescar</button>
-            <button class="btn admin" id="btnAdmin">📊 Admin</button>
-
-            <div class="status-container" id="statusContainer" title="Estado de la conexión con Supabase">
-                <span class="status-dot connecting" id="dbStatus"></span>
-                <span id="statusText">Conectando...</span>
-            </div>
-
-            <div class="legend">
-                <span><span class="legend-dot green"></span> Pagado</span>
-                <span><span class="legend-dot yellow"></span> Pendiente</span>
-                <span><span class="legend-dot gray"></span> Disponible</span>
-            </div>
-        </div>
-
-        <div class="ticket-grid" id="ticketGrid"></div>
-
-        <!-- Resumen de boletos y costo total vendido por persona -->
-        <div class="seller-summary" id="sellerSummary">
-            <h4>👥 Boletos vendidos y total por persona</h4>
-            <div id="sellerSummaryList"></div>
-        </div>
+    <!-- ===== HEADER ===== -->
+    <div class="header">
+        <div class="emoji">💍</div>
+        <h1>Nuestra Boda</h1>
+        <div class="divider"></div>
+        <p>Comparte los momentos que captures<br>y ayúdanos a guardar este día tan especial</p>
     </div>
 
-    <!-- ===== MODAL DE VENTA / ABONO ===== -->
-    <div class="modal-overlay" id="sellModal">
-        <div class="modal">
-            <h3 id="modalTitle">🎫 Vender Boleto <span id="modalTicketNumber">#0</span></h3>
-            <div id="modalBody">
-                <label for="sellerSelect">👤 Vendedor</label>
-                <select id="sellerSelect">
-                    <option value="">-- Selecciona un vendedor --</option>
-                    <option value="Carmen">Carmen</option>
-                    <option value="Jesús">Jesús</option>
-                    <option value="Leslie">Leslie</option>
-                    <option value="Mamá">Mamá</option>
-                    <option value="Araceli">Araceli</option>
-                </select>
+    <!-- ===== FORMULARIO DE SUBIDA ===== -->
+    <div class="card">
+        <label for="guestName">👤 Tu nombre *</label>
+        <input type="text" id="guestName" placeholder="Ej. María González" maxlength="60" />
 
-                <div class="info-line"><span class="label">💵 Precio total</span><span class="value" id="displayPrice">$0</span></div>
-                <div class="info-line" id="paidInfo" style="display:none;"><span class="label">💰 Pagado</span><span class="value" id="displayPaid">$0</span></div>
-                <div class="info-line" id="remainingInfo" style="display:none;"><span class="label">⏳ Saldo restante</span><span class="value pending" id="displayRemaining">$0</span></div>
+        <label for="guestMessage">💌 Dedicatoria (opcional)</label>
+        <textarea id="guestMessage" placeholder="Un mensaje para los novios..." maxlength="300"></textarea>
 
-                <label for="abonoInput">💵 Monto del abono (ahora)</label>
-                <input type="number" id="abonoInput" placeholder="Ej. 50" min="0" step="1" />
-                <div class="sub" id="abonoHelp">Ingresa el monto que se paga en este momento. Si es menor al total, quedará un saldo pendiente.</div>
-
-                <div class="modal-actions">
-                    <button class="btn danger" id="btnAnular" style="display:none;">🗑️ Anular venta</button>
-                    <button class="btn" id="cancelSell">Cancelar</button>
-                    <button class="btn accent" id="confirmSell">✅ Confirmar</button>
-                </div>
-            </div>
+        <div class="upload-zone" id="uploadZone">
+            <div class="icon">📷</div>
+            <div class="text">Toca para subir fotos o videos</div>
+            <div class="sub">Puedes seleccionar varios a la vez (máx. 10)</div>
         </div>
+        <input type="file" id="fileInput" accept="image/*,video/*" multiple />
+
+        <div class="preview-grid" id="previewGrid"></div>
+
+        <div class="progress-bar" id="progressBar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+
+        <div class="status-msg" id="statusMsg"></div>
+
+        <button class="btn btn-primary" id="uploadBtn" disabled>
+            ✨ Compartir con los novios
+        </button>
     </div>
 
-    <!-- ===== MODAL DE ADMIN ===== -->
-    <div class="modal-overlay" id="adminModal">
-        <div class="modal" style="max-width:500px;">
-            <h3>📊 Panel de Administración</h3>
-            <div class="admin-stats">
-                <div class="admin-stat"><span class="number" id="adminSold">0</span><span class="label">Boletos vendidos</span></div>
-                <div class="admin-stat"><span class="number" id="adminPaid">$0</span><span class="label">Total recaudado</span></div>
-                <div class="admin-stat"><span class="number" id="adminPending">$0</span><span class="label">Saldo pendiente total</span></div>
-                <div class="admin-stat"><span class="number" id="adminPagados">0</span><span class="label">Boletos pagados completamente</span></div>
-            </div>
-            <div id="adminDebtList" class="admin-debt-list">
-                <div style="color:#8b949e; text-align:center; padding:10px;">No hay boletos con saldo pendiente.</div>
-            </div>
-            <div class="seller-totals" id="sellerTotalsContainer">
-                <h4>👥 Total vendido por persona</h4>
-                <div id="sellerTotalsList"></div>
-            </div>
-            <div class="modal-actions">
-                <button class="btn" id="closeAdmin">Cerrar</button>
-            </div>
-        </div>
+    <!-- ===== GALERÍA ===== -->
+    <div class="gallery-title">📸 Álbum de la boda</div>
+    <div class="card">
+        <div class="gallery" id="gallery"></div>
+        <div class="empty-gallery" id="emptyGallery">Aún no hay fotos. ¡Sé el primero en compartir!</div>
     </div>
+</div>
 
-    <script>
-        (function() {
-            // ══════════════════════════════════════
-            // CONFIGURACIÓN SUPABASE
-            // ══════════════════════════════════════
-            const SUPABASE_URL = "https://zavonkfpunwwqjliojtb.supabase.co";
-            const SUPABASE_ANON_KEY = "sb_publishable_MEkptp0YhHcsTLDPoIl0Nw_s3kMyYo9";
-            const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+<!-- ===== LIGHTBOX ===== -->
+<div class="lightbox" id="lightbox">
+    <button class="close" id="lightboxClose">✕</button>
+    <div id="lightboxContent"></div>
+    <div class="caption" id="lightboxCaption"></div>
+</div>
 
-            const TOTAL = 300;
-            // Estructura: { sold, seller, price, paid }
-            let tickets = new Array(TOTAL + 1).fill(null).map((_, i) => ({
-                sold: false,
-                seller: '',
-                price: i, // siempre igual al número
-                paid: 0
-            }));
+<script>
+(function() {
+    // ══════════════════════════════════════
+    // CONFIGURACIÓN SUPABASE
+    // ══════════════════════════════════════
+    const SUPABASE_URL = "https://zavonkfpunwwqjliojtb.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_MEkptp0YhHcsTLDPoIl0Nw_s3kMyYo9";
+    const BUCKET = "wedding-photos";
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-            let currentModalTicket = null; // número individual
-            let currentModalBlock = null; // array de números (para venta masiva)
-            let editingMode = false; // true cuando se está abonando a un boleto ya vendido
-            let blockMode = false; // true cuando se vende un bloque
+    const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50 MB
+    const MAX_FILES = 10;
 
-            const gridEl = document.getElementById('ticketGrid');
-            const soldCountEl = document.getElementById('soldCount');
-            const totalPaidEl = document.getElementById('totalPaid');
-            const totalPendingEl = document.getElementById('totalPending');
-            const liveTimestampEl = document.getElementById('liveTimestamp');
-            const cellElements = {};
+    // ══════════════════════════════════════
+    // REFERENCIAS DOM
+    // ══════════════════════════════════════
+    const guestNameEl = document.getElementById('guestName');
+    const guestMessageEl = document.getElementById('guestMessage');
+    const uploadZone = document.getElementById('uploadZone');
+    const fileInput = document.getElementById('fileInput');
+    const previewGrid = document.getElementById('previewGrid');
+    const uploadBtn = document.getElementById('uploadBtn');
+    const progressBar = document.getElementById('progressBar');
+    const progressFill = document.getElementById('progressFill');
+    const statusMsg = document.getElementById('statusMsg');
+    const galleryEl = document.getElementById('gallery');
+    const emptyGallery = document.getElementById('emptyGallery');
+    const lightbox = document.getElementById('lightbox');
+    const lightboxContent = document.getElementById('lightboxContent');
+    const lightboxCaption = document.getElementById('lightboxCaption');
+    const lightboxClose = document.getElementById('lightboxClose');
 
-            const statusDot = document.getElementById('dbStatus');
-            const statusText = document.getElementById('statusText');
+    let selectedFiles = [];
 
-            // Modal venta
-            const modalOverlay = document.getElementById('sellModal');
-            const modalTitle = document.getElementById('modalTitle');
-            const modalTicketNumber = document.getElementById('modalTicketNumber');
-            const sellerSelect = document.getElementById('sellerSelect');
-            const abonoInput = document.getElementById('abonoInput');
-            const displayPrice = document.getElementById('displayPrice');
-            const displayPaid = document.getElementById('displayPaid');
-            const displayRemaining = document.getElementById('displayRemaining');
-            const paidInfo = document.getElementById('paidInfo');
-            const remainingInfo = document.getElementById('remainingInfo');
-            const abonoHelp = document.getElementById('abonoHelp');
-            const cancelSellBtn = document.getElementById('cancelSell');
-            const confirmSellBtn = document.getElementById('confirmSell');
-            const btnAnular = document.getElementById('btnAnular');
-            const modalBody = document.getElementById('modalBody');
+    // ══════════════════════════════════════
+    // SELECCIÓN DE ARCHIVOS
+    // ══════════════════════════════════════
+    uploadZone.addEventListener('click', () => fileInput.click());
 
-            // Modal admin
-            const adminModal = document.getElementById('adminModal');
-            const adminSold = document.getElementById('adminSold');
-            const adminPaid = document.getElementById('adminPaid');
-            const adminPending = document.getElementById('adminPending');
-            const adminPagados = document.getElementById('adminPagados');
-            const adminDebtList = document.getElementById('adminDebtList');
-            const closeAdminBtn = document.getElementById('closeAdmin');
-            const sellerTotalsList = document.getElementById('sellerTotalsList');
+    uploadZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadZone.classList.add('dragover');
+    });
 
-            // Resumen en panel principal
-            const sellerSummaryList = document.getElementById('sellerSummaryList');
+    uploadZone.addEventListener('dragleave', () => {
+        uploadZone.classList.remove('dragover');
+    });
 
-            // ══════════════════════════════════════
-            // ESTADO DE CONEXIÓN
-            // ══════════════════════════════════════
-            function setStatusOnline() {
-                statusDot.className = 'status-dot online';
-                statusText.textContent = 'BD Conectada';
-                statusDot.title = 'Conexión exitosa y tiempo real activo';
+    uploadZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadZone.classList.remove('dragover');
+        handleFiles(e.dataTransfer.files);
+    });
+
+    fileInput.addEventListener('change', (e) => {
+        handleFiles(e.target.files);
+        fileInput.value = ''; // permitir volver a seleccionar el mismo archivo
+    });
+
+    function handleFiles(files) {
+        const nuevos = Array.from(files);
+        for (const f of nuevos) {
+            if (selectedFiles.length >= MAX_FILES) {
+                showStatus(`Máximo ${MAX_FILES} archivos por envío.`, 'error');
+                break;
             }
-
-            function setStatusOffline(errorMsg) {
-                statusDot.className = 'status-dot offline';
-                statusText.textContent = 'BD Desconectada';
-                statusDot.title = errorMsg || 'Error de conexión';
+            const isImage = f.type.startsWith('image/');
+            const isVideo = f.type.startsWith('video/');
+            if (!isImage && !isVideo) {
+                showStatus(`"${f.name}" no es una imagen o video válido.`, 'error');
+                continue;
             }
-
-            function setStatusConnecting() {
-                statusDot.className = 'status-dot connecting';
-                statusText.textContent = 'Conectando...';
-                statusDot.title = 'Estableciendo conexión...';
+            if (f.size > MAX_FILE_SIZE) {
+                showStatus(`"${f.name}" excede los 50 MB.`, 'error');
+                continue;
             }
+            // Evitar duplicados
+            const yaExiste = selectedFiles.some(existing =>
+                existing.name === f.name && existing.size === f.size
+            );
+            if (!yaExiste) selectedFiles.push(f);
+        }
+        renderPreview();
+        updateButton();
+    }
 
-            // ══════════════════════════════════════
-            // REFRESCO PERIÓDICO
-            // ══════════════════════════════════════
-            let pollingInterval = null;
-
-            async function refrescarDatos() {
-                try {
-                    const { data, error } = await supabase
-                        .from('tickets')
-                        .select('*')
-                        .order('id', { ascending: true });
-
-                    if (error) throw error;
-
-                    if (data && data.length === TOTAL) {
-                        for (let i = 0; i < data.length; i++) {
-                            const row = data[i];
-                            tickets[row.id] = {
-                                sold: row.sold,
-                                seller: row.seller || '',
-                                price: row.id, // siempre el número
-                                paid: row.paid || 0
-                            };
-                        }
-                        refrescarTodasLasCeldas();
-                        actualizarTotales();
-                        setStatusOnline();
-                    }
-                } catch (err) {
-                    console.error('Error al refrescar boletos:', err);
-                    setStatusOffline(err.message || 'Error en el refresco');
-                }
+    function renderPreview() {
+        previewGrid.innerHTML = '';
+        selectedFiles.forEach((file, i) => {
+            const item = document.createElement('div');
+            item.className = 'preview-item';
+            const isVideo = file.type.startsWith('video/');
+            const url = URL.createObjectURL(file);
+            if (isVideo) {
+                item.innerHTML = `<video src="${url}" muted></video><span class="badge">🎥 Video</span>`;
+            } else {
+                item.innerHTML = `<img src="${url}" alt="" /><span class="badge">📷 Foto</span>`;
             }
+            const removeBtn = document.createElement('button');
+            removeBtn.className = 'remove';
+            removeBtn.textContent = '✕';
+            removeBtn.onclick = (e) => {
+                e.stopPropagation();
+                URL.revokeObjectURL(url);
+                selectedFiles.splice(i, 1);
+                renderPreview();
+                updateButton();
+            };
+            item.appendChild(removeBtn);
+            previewGrid.appendChild(item);
+        });
+    }
 
-            function iniciarPolling(intervaloMs = 10000) {
-                if (pollingInterval) clearInterval(pollingInterval);
-                pollingInterval = setInterval(refrescarDatos, intervaloMs);
+    function updateButton() {
+        uploadBtn.disabled = selectedFiles.length === 0 || !guestNameEl.value.trim();
+    }
+
+    guestNameEl.addEventListener('input', updateButton);
+
+    // ══════════════════════════════════════
+    // SUBIDA DE ARCHIVOS
+    // ══════════════════════════════════════
+    uploadBtn.addEventListener('click', async () => {
+        const guestName = guestNameEl.value.trim();
+        if (!guestName) {
+            showStatus('Por favor escribe tu nombre.', 'error');
+            return;
+        }
+        if (selectedFiles.length === 0) {
+            showStatus('Selecciona al menos un archivo.', 'error');
+            return;
+        }
+
+        uploadBtn.disabled = true;
+        progressBar.classList.add('active');
+        progressFill.style.width = '0%';
+        showStatus('Subiendo archivos...', 'info');
+
+        const total = selectedFiles.length;
+        let completados = 0;
+        const errores = [];
+        const archivosSubidos = [...selectedFiles];
+
+        for (const file of archivosSubidos) {
+            try {
+                await subirArchivo(file, guestName);
+                completados++;
+                progressFill.style.width = `${(completados / total) * 100}%`;
+            } catch (err) {
+                console.error('Error al subir:', file.name, err);
+                errores.push(file.name);
             }
+        }
 
-            function detenerPolling() {
-                if (pollingInterval) {
-                    clearInterval(pollingInterval);
-                    pollingInterval = null;
-                }
-            }
+        if (errores.length === 0) {
+            showStatus(`¡Gracias ${guestName}! ${completados} archivo(s) compartido(s) 💕`, 'success');
+            selectedFiles = [];
+            renderPreview();
+            guestMessageEl.value = '';
+        } else {
+            showStatus(`Se subieron ${completados}/${total}. Fallaron: ${errores.join(', ')}`, 'error');
+            // Eliminar los que sí se subieron
+            selectedFiles = selectedFiles.filter(f => errores.includes(f.name));
+            renderPreview();
+        }
 
-            // ══════════════════════════════════════
-            // CARGA INICIAL Y SUSCRIPCIÓN EN VIVO
-            // ══════════════════════════════════════
-            async function cargarEstadoInicial() {
-                setStatusConnecting();
-                try {
-                    const { data, error } = await supabase
-                        .from('tickets')
-                        .select('*')
-                        .order('id', { ascending: true });
+        setTimeout(() => {
+            progressBar.classList.remove('active');
+            progressFill.style.width = '0%';
+        }, 1500);
 
-                    if (error) throw error;
+        updateButton();
+        cargarGaleria();
+    });
 
-                    if (data && data.length === TOTAL) {
-                        for (let i = 0; i < TOTAL; i++) {
-                            const row = data[i];
-                            tickets[row.id] = {
-                                sold: row.sold,
-                                seller: row.seller || '',
-                                price: row.id,
-                                paid: row.paid || 0
-                            };
-                        }
-                    }
-                    refrescarTodasLasCeldas();
-                    actualizarTotales();
-                    setStatusOnline();
-                } catch (err) {
-                    console.error('Error al cargar los boletos:', err);
-                    setStatusOffline(err.message || 'Error desconocido al cargar datos');
-                }
-            }
+    async function subirArchivo(file, guestName) {
+        // Generar path único
+        const timestamp = Date.now();
+        const random = Math.random().toString(36).slice(2, 8);
+        const safeName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+        const path = `${timestamp}_${random}_${safeName}`;
 
-            function suscribirCambiosEnVivo() {
-                supabase
-                    .channel('tickets-cambios')
-                    .on(
-                        'postgres_changes', { event: '*', schema: 'public', table: 'tickets' },
-                        (payload) => {
-                            if (payload.new && payload.new.id) {
-                                const id = payload.new.id;
-                                tickets[id] = {
-                                    sold: payload.new.sold,
-                                    seller: payload.new.seller || '',
-                                    price: id,
-                                    paid: payload.new.paid || 0
-                                };
-                                actualizarCelda(id);
-                                actualizarTotales();
-                            }
-                        }
-                    )
-                    .subscribe((status, err) => {
-                        if (status === 'SUBSCRIBED') {
-                            setStatusOnline();
-                        } else if (status === 'CHANNEL_ERROR') {
-                            setStatusOffline(err?.message || 'Error en la suscripción en vivo');
-                        }
-                    });
-            }
+        // 1) Subir a Storage
+        const { error: uploadError } = await supabase.storage
+            .from(BUCKET)
+            .upload(path, file, {
+                cacheControl: '3600',
+                upsert: false,
+                contentType: file.type
+            });
 
-            // ══════════════════════════════════════
-            // INTERFAZ DE USUARIO
-            // ══════════════════════════════════════
-            function construirGrid() {
-                gridEl.innerHTML = '';
-                for (let num = 1; num <= TOTAL; num++) {
-                    const cell = document.createElement('div');
-                    cell.className = 'ticket-cell available';
-                    cell.setAttribute('data-ticket', num);
-                    cell.innerHTML = `
-                        <span class="ticket-number">#${num}</span>
-                        <span class="ticket-status" data-role="status">Disp.</span>
-                    `;
-                    cell.addEventListener('click', () => manejarClickBoleto(num));
-                    gridEl.appendChild(cell);
-                    cellElements[num] = {
-                        container: cell,
-                        statusEl: cell.querySelector('[data-role="status"]')
-                    };
-                }
-            }
+        if (uploadError) throw uploadError;
 
-            function actualizarCelda(num) {
-                const { container, statusEl } = cellElements[num];
-                const t = tickets[num];
-                // Resetear clases
-                container.classList.remove('sold', 'pending', 'pagado', 'available');
-                if (t.sold) {
-                    if (t.paid >= t.price) {
-                        container.classList.add('pagado');
-                        statusEl.textContent = '✅ Pagado';
-                    } else {
-                        container.classList.add('pending');
-                        const resto = t.price - t.paid;
-                        statusEl.textContent = `⏳ $${resto}`;
-                    }
-                    container.setAttribute('data-tooltip', `${t.seller} — Pagado $${t.paid} de $${t.price}`);
-                } else {
-                    container.classList.add('available');
-                    statusEl.textContent = 'Disp.';
-                    container.removeAttribute('data-tooltip');
-                }
-            }
+        // 2) Obtener URL pública
+        const { data: urlData } = supabase.storage
+            .from(BUCKET)
+            .getPublicUrl(path);
 
-            function refrescarTodasLasCeldas() {
-                for (let num = 1; num <= TOTAL; num++) actualizarCelda(num);
-            }
+        // 3) Insertar registro en la tabla
+        const mediaType = file.type.startsWith('video/') ? 'video' : 'photo';
+        const { error: dbError } = await supabase
+            .from('wedding_media')
+            .insert({
+                guest_name: guestName,
+                message: guestMessageEl.value.trim() || null,
+                media_type: mediaType,
+                file_url: urlData.publicUrl,
+                file_path: path,
+                file_name: file.name,
+                file_size: file.size,
+                mime_type: file.type
+            });
 
-            function actualizarTotales() {
-                let vendidos = 0,
-                    totalPaid = 0,
-                    totalPending = 0;
-                for (let i = 1; i <= TOTAL; i++) {
-                    const t = tickets[i];
-                    if (t.sold) {
-                        vendidos++;
-                        totalPaid += t.paid;
-                        if (t.paid < t.price) totalPending += (t.price - t.paid);
-                    }
-                }
-                soldCountEl.textContent = vendidos;
-                totalPaidEl.textContent = `$${totalPaid}`;
-                totalPendingEl.textContent = `$${totalPending}`;
+        if (dbError) {
+            // Si falla la BD, eliminar el archivo del storage
+            await supabase.storage.from(BUCKET).remove([path]);
+            throw dbError;
+        }
+    }
 
-                // Actualizar también el resumen de vendedores
-                actualizarResumenVendedores();
-            }
+    function showStatus(msg, type) {
+        statusMsg.textContent = msg;
+        statusMsg.className = `status-msg ${type}`;
+    }
 
-            function actualizarResumenVendedores() {
-                const sellerData = {};
-                for (let i = 1; i <= TOTAL; i++) {
-                    const t = tickets[i];
-                    if (t.sold && t.seller && t.seller.trim() !== '') {
-                        if (!sellerData[t.seller]) {
-                            sellerData[t.seller] = {
-                                count: 0,
-                                total: 0
-                            };
-                        }
-                        sellerData[t.seller].count++;
-                        sellerData[t.seller].total += t.price; // precio = número
-                    }
-                }
-                const sellerNames = Object.keys(sellerData);
-                if (sellerNames.length === 0) {
-                    sellerSummaryList.innerHTML = '<div style="color:#8b949e; text-align:center; padding:10px;">No hay ventas registradas.</div>';
-                } else {
-                    sellerNames.sort();
-                    sellerSummaryList.innerHTML = sellerNames.map(name => {
-                        const data = sellerData[name];
-                        return `<div class="seller-summary-item">
-                                    <span class="seller-name">${name}</span>
-                                    <span class="seller-right">
-                                        <span class="seller-ticket-count">${data.count} boletos</span>
-                                        <span class="seller-total-amount">$${data.total}</span>
-                                    </span>
-                                </div>`;
-                    }).join('');
-                }
-            }
+    // ══════════════════════════════════════
+    // GALERÍA
+    // ══════════════════════════════════════
+    async function cargarGaleria() {
+        const { data, error } = await supabase
+            .from('wedding_media')
+            .select('*')
+            .order('created_at', { ascending: false })
+            .limit(60);
 
-            // ══════════════════════════════════════
-            // MANEJO DEL MODAL (VENTA / ABONO)
-            // ══════════════════════════════════════
-            function abrirModalVenta(ticketNumbers, isBlock = false) {
-                blockMode = isBlock;
-                editingMode = false;
-                btnAnular.style.display = 'none';
-                confirmSellBtn.textContent = '✅ Confirmar venta';
-                abonoHelp.textContent = 'Ingresa el monto que se paga en este momento. Si es menor al total, quedará un saldo pendiente.';
+        if (error) {
+            console.error('Error cargando galería:', error);
+            return;
+        }
 
-                if (Array.isArray(ticketNumbers)) {
-                    if (ticketNumbers.length === 0) {
-                        alert('No hay boletos disponibles para vender.');
-                        return;
-                    }
-                    currentModalTicket = null;
-                    currentModalBlock = ticketNumbers;
-                    modalTicketNumber.textContent = `${ticketNumbers.length} boletos`;
-                    modalTitle.innerHTML = `🎫 Vender múltiples boletos <span id="modalTicketNumber">${ticketNumbers.length} boletos</span>`;
-                    // Para bloques, solo pedimos vendedor y un abono global (se aplica a cada boleto)
-                    // Mostramos precio total promedio? mejor no, solo pedimos vendedor y abono por boleto.
-                    // Simplificamos: pedimos vendedor y un abono que se aplicará a cada boleto.
-                    displayPrice.textContent = `$${ticketNumbers.reduce((s, n) => s + n, 0)} (total)`;
-                    paidInfo.style.display = 'none';
-                    remainingInfo.style.display = 'none';
-                    abonoInput.placeholder = 'Abono por boleto (ej. 50)';
-                    abonoInput.value = '';
-                    abonoHelp.textContent = 'Este monto se aplicará a CADA boleto seleccionado.';
-                } else {
-                    currentModalTicket = ticketNumbers;
-                    currentModalBlock = null;
-                    modalTicketNumber.textContent = `#${ticketNumbers}`;
-                    modalTitle.innerHTML = `🎫 Vender Boleto <span id="modalTicketNumber">#${ticketNumbers}</span>`;
-                    const t = tickets[ticketNumbers];
-                    displayPrice.textContent = `$${t.price}`;
-                    paidInfo.style.display = 'none';
-                    remainingInfo.style.display = 'none';
-                    abonoInput.placeholder = 'Monto del abono';
-                    abonoInput.value = '';
-                    abonoHelp.textContent = 'Ingresa el monto que se paga en este momento. Si es menor al total, quedará un saldo pendiente.';
-                }
+        if (!data || data.length === 0) {
+            galleryEl.innerHTML = '';
+            emptyGallery.style.display = 'block';
+            return;
+        }
 
-                sellerSelect.value = '';
-                sellerSelect.disabled = false;
-                modalOverlay.classList.add('active');
-                sellerSelect.focus();
-            }
+        emptyGallery.style.display = 'none';
+        galleryEl.innerHTML = data.map(item => {
+            const media = item.media_type === 'video'
+                ? `<video src="${item.file_url}" muted preload="metadata"></video>`
+                : `<img src="${item.file_url}" loading="lazy" alt="" />`;
+            return `
+                <div class="gallery-item"
+                     data-url="${escapeHtml(item.file_url)}"
+                     data-type="${escapeHtml(item.media_type)}"
+                     data-guest="${escapeHtml(item.guest_name)}"
+                     data-msg="${escapeHtml(item.message || '')}">
+                    ${media}
+                    <span class="guest">${escapeHtml(item.guest_name)}</span>
+                </div>`;
+        }).join('');
 
-            function abrirModalAbono(num) {
-                const t = tickets[num];
-                if (!t.sold) {
-                    // Si no está vendido, abrir como venta normal
-                    abrirModalVenta(num, false);
-                    return;
-                }
+        document.querySelectorAll('.gallery-item').forEach(el => {
+            el.addEventListener('click', () => {
+                abrirLightbox(el.dataset.url, el.dataset.type, el.dataset.guest, el.dataset.msg);
+            });
+        });
+    }
 
-                editingMode = true;
-                blockMode = false;
-                currentModalTicket = num;
-                currentModalBlock = null;
-                modalTicketNumber.textContent = `#${num}`;
-                modalTitle.innerHTML = `💰 Abonar Boleto <span id="modalTicketNumber">#${num}</span>`;
-                confirmSellBtn.textContent = '💾 Abonar';
-                btnAnular.style.display = 'inline-flex';
-                abonoHelp.textContent = 'Ingresa el monto adicional que deseas pagar ahora.';
+    function escapeHtml(s) {
+        return String(s).replace(/[&<>"']/g, c => ({
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#39;'
+        }[c]));
+    }
 
-                displayPrice.textContent = `$${t.price}`;
-                displayPaid.textContent = `$${t.paid}`;
-                const resto = t.price - t.paid;
-                displayRemaining.textContent = `$${resto}`;
-                paidInfo.style.display = 'flex';
-                remainingInfo.style.display = 'flex';
+    function abrirLightbox(url, type, guest, msg) {
+        lightboxContent.innerHTML = type === 'video'
+            ? `<video src="${url}" controls autoplay></video>`
+            : `<img src="${url}" alt="" />`;
+        lightboxCaption.textContent = msg ? `${guest} — "${msg}"` : guest;
+        lightbox.classList.add('active');
+    }
 
-                abonoInput.placeholder = 'Monto adicional';
-                abonoInput.value = '';
-                abonoInput.min = 0;
-                abonoInput.max = resto;
+    lightboxClose.addEventListener('click', () => {
+        lightbox.classList.remove('active');
+        lightboxContent.innerHTML = '';
+    });
 
-                sellerSelect.value = t.seller;
-                sellerSelect.disabled = true; // no se puede cambiar vendedor
+    lightbox.addEventListener('click', (e) => {
+        if (e.target === lightbox) {
+            lightbox.classList.remove('active');
+            lightboxContent.innerHTML = '';
+        }
+    });
 
-                modalOverlay.classList.add('active');
-                abonoInput.focus();
-            }
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && lightbox.classList.contains('active')) {
+            lightbox.classList.remove('active');
+            lightboxContent.innerHTML = '';
+        }
+    });
 
-            function cerrarModal() {
-                modalOverlay.classList.remove('active');
-                currentModalTicket = null;
-                currentModalBlock = null;
-                editingMode = false;
-                blockMode = false;
-                btnAnular.style.display = 'none';
-                sellerSelect.disabled = false;
-                paidInfo.style.display = 'none';
-                remainingInfo.style.display = 'none';
-            }
+    // ══════════════════════════════════════
+    // REALTIME: nuevas fotos en vivo
+    // ══════════════════════════════════════
+    supabase
+        .channel('wedding-media')
+        .on('postgres_changes',
+            { event: 'INSERT', schema: 'public', table: 'wedding_media' },
+            () => cargarGaleria()
+        )
+        .subscribe();
 
-            // ══════════════════════════════════════
-            // ACCIONES: VENTA, ABONO, ANULACIÓN
-            // ══════════════════════════════════════
-            async function confirmarVenta() {
-                const seller = sellerSelect.value;
-                if (!seller) {
-                    alert('Selecciona un vendedor.');
-                    return;
-                }
-
-                const abono = parseInt(abonoInput.value, 10);
-                if (isNaN(abono) || abono < 0) {
-                    alert('Ingresa un monto de abono válido (mayor o igual a 0).');
-                    return;
-                }
-
-                let ids = [];
-                if (currentModalTicket !== null) {
-                    ids = [currentModalTicket];
-                } else if (currentModalBlock && currentModalBlock.length > 0) {
-                    ids = currentModalBlock;
-                } else {
-                    return;
-                }
-
-                // Para cada boleto, calcular el paid final
-                const updates = ids.map(id => {
-                    const t = tickets[id];
-                    let paid = abono;
-                    // Si es un solo boleto y ya tiene paid (modo edición), sumamos
-                    if (editingMode && currentModalTicket !== null && id === currentModalTicket) {
-                        paid = t.paid + abono;
-                        if (paid > t.price) paid = t.price;
-                    }
-                    // Si es bloque, el abono se aplica a cada uno (puede ser 0)
-                    // Si el abono es mayor que el precio, lo ajustamos
-                    if (paid > id) paid = id;
-                    return {
-                        id: id,
-                        sold: true,
-                        seller: seller,
-                        price: id,
-                        paid: paid
-                    };
-                });
-
-                try {
-                    const { error } = await supabase
-                        .from('tickets')
-                        .upsert(updates, { onConflict: 'id' });
-
-                    if (error) throw error;
-                    cerrarModal();
-                } catch (err) {
-                    console.error('Error al guardar la venta/abono:', err);
-                    alert(`❌ Error al guardar:\n${err.message || 'Error desconocido'}`);
-                }
-            }
-
-            async function anularVenta() {
-                if (currentModalTicket === null) return;
-                const id = currentModalTicket;
-                if (!confirm(`¿Seguro que quieres anular la venta del boleto #${id}?`)) return;
-
-                try {
-                    const { error } = await supabase
-                        .from('tickets')
-                        .upsert({ id, sold: false, seller: '', price: id, paid: 0 }, { onConflict: 'id' });
-
-                    if (error) throw error;
-                    cerrarModal();
-                } catch (err) {
-                    console.error('Error al anular:', err);
-                    alert(`❌ Error al anular la venta:\n${err.message}`);
-                }
-            }
-
-            // ══════════════════════════════════════
-            // ADMIN
-            // ══════════════════════════════════════
-            function actualizarAdmin() {
-                let vendidos = 0,
-                    totalPaid = 0,
-                    totalPending = 0,
-                    pagados = 0;
-                const deudas = [];
-                // Objeto para acumular por vendedor
-                const sellerStats = {};
-
-                for (let i = 1; i <= TOTAL; i++) {
-                    const t = tickets[i];
-                    if (t.sold) {
-                        vendidos++;
-                        totalPaid += t.paid;
-                        const pending = t.price - t.paid;
-                        if (pending > 0) {
-                            totalPending += pending;
-                            deudas.push({ num: i, pending: pending });
-                        } else {
-                            pagados++;
-                        }
-
-                        // Acumular por vendedor
-                        if (t.seller && t.seller.trim() !== '') {
-                            if (!sellerStats[t.seller]) {
-                                sellerStats[t.seller] = {
-                                    total: 0,
-                                    paid: 0,
-                                    pending: 0
-                                };
-                            }
-                            sellerStats[t.seller].total += t.price;
-                            sellerStats[t.seller].paid += t.paid;
-                            sellerStats[t.seller].pending += pending;
-                        }
-                    }
-                }
-
-                adminSold.textContent = vendidos;
-                adminPaid.textContent = `$${totalPaid}`;
-                adminPending.textContent = `$${totalPending}`;
-                adminPagados.textContent = pagados;
-
-                // Deudas list
-                if (deudas.length === 0) {
-                    adminDebtList.innerHTML = '<div style="color:#8b949e; text-align:center; padding:10px;">No hay boletos con saldo pendiente.</div>';
-                } else {
-                    adminDebtList.innerHTML = deudas.map(d =>
-                        `<div class="debt-item"><span class="num">#${d.num}</span><span class="amount">$${d.pending} pendiente</span></div>`
-                    ).join('');
-                }
-
-                // Renderizar totales por vendedor
-                const sellerNames = Object.keys(sellerStats);
-                if (sellerNames.length === 0) {
-                    sellerTotalsList.innerHTML = '<div style="color:#8b949e; text-align:center; padding:10px;">No hay ventas registradas.</div>';
-                } else {
-                    // Ordenar alfabéticamente para consistencia
-                    sellerNames.sort();
-                    sellerTotalsList.innerHTML = sellerNames.map(name => {
-                        const s = sellerStats[name];
-                        return `<div class="seller-total-item">
-                                    <span class="seller-name">${name}</span>
-                                    <span class="seller-amounts">
-                                        <span class="seller-amount total">Total $${s.total}</span>
-                                        <span class="seller-amount paid">Pagado $${s.paid}</span>
-                                        <span class="seller-amount pending">Pend. $${s.pending}</span>
-                                    </span>
-                                </div>`;
-                    }).join('');
-                }
-            }
-
-            function abrirAdmin() {
-                actualizarAdmin();
-                adminModal.classList.add('active');
-            }
-
-            function cerrarAdmin() {
-                adminModal.classList.remove('active');
-            }
-
-            // ══════════════════════════════════════
-            // EVENTOS DE BOTONES Y MODAL
-            // ══════════════════════════════════════
-            cancelSellBtn.addEventListener('click', cerrarModal);
-            confirmSellBtn.addEventListener('click', confirmarVenta);
-            btnAnular.addEventListener('click', anularVenta);
-
-            document.addEventListener('keydown', (e) => { if (e.key === 'Escape') cerrarModal(); });
-            modalOverlay.addEventListener('click', (e) => { if (e.target === modalOverlay) cerrarModal(); });
-
-            closeAdminBtn.addEventListener('click', cerrarAdmin);
-            adminModal.addEventListener('click', (e) => { if (e.target === adminModal) cerrarAdmin(); });
-
-            // ══════════════════════════════════════
-            // MANEJO DE CLIC EN BOLETO
-            // ══════════════════════════════════════
-            function manejarClickBoleto(num) {
-                if (tickets[num].sold) {
-                    // Si está vendido, abrir modal de abono (si tiene saldo) o solo mostrar info?
-                    if (tickets[num].paid < tickets[num].price) {
-                        abrirModalAbono(num);
-                    } else {
-                        // Pagado completamente, mostrar mensaje o permitir ver detalles
-                        alert(`El boleto #${num} ya está pagado completamente.`);
-                    }
-                } else {
-                    abrirModalVenta(num, false);
-                }
-            }
-
-            // ══════════════════════════════════════
-            // BOTONES PRINCIPALES
-            // ══════════════════════════════════════
-            function venderPrimerosN(n) {
-                const disponibles = [];
-                for (let i = 1; i <= n; i++) {
-                    if (!tickets[i].sold) disponibles.push(i);
-                }
-                if (disponibles.length === 0) {
-                    alert(`Los primeros ${n} boletos ya están vendidos.`);
-                    return;
-                }
-                abrirModalVenta(disponibles, true);
-            }
-
-            function venderAleatoriosN(n) {
-                const disponibles = [];
-                for (let i = 1; i <= TOTAL; i++) {
-                    if (!tickets[i].sold) disponibles.push(i);
-                }
-                if (disponibles.length === 0) {
-                    alert('Todos los boletos están vendidos.');
-                    return;
-                }
-                for (let i = disponibles.length - 1; i > 0; i--) {
-                    const j = Math.floor(Math.random() * (i + 1));
-                    [disponibles[i], disponibles[j]] = [disponibles[j], disponibles[i]];
-                }
-                const seleccion = disponibles.slice(0, Math.min(n, disponibles.length));
-                abrirModalVenta(seleccion, true);
-            }
-
-            async function reiniciarTodo() {
-                if (!confirm('¿Seguro que quieres reiniciar todas las ventas?')) return;
-
-                const updates = [];
-                for (let i = 1; i <= TOTAL; i++) {
-                    updates.push({ id: i, sold: false, seller: '', price: i, paid: 0 });
-                }
-
-                try {
-                    const { error } = await supabase
-                        .from('tickets')
-                        .upsert(updates, { onConflict: 'id' });
-
-                    if (error) throw error;
-                } catch (err) {
-                    console.error('Error al reiniciar:', err);
-                    alert(`❌ Error al reiniciar las ventas:\n${err.message || 'Error desconocido'}`);
-                }
-            }
-
-            function actualizarReloj() {
-                liveTimestampEl.textContent = new Date().toLocaleTimeString('es-ES', { hour12: false });
-            }
-
-            document.getElementById('btnSell200').addEventListener('click', () => venderPrimerosN(200));
-            document.getElementById('btnSell250').addEventListener('click', () => venderPrimerosN(250));
-            document.getElementById('btnSellRandom').addEventListener('click', () => venderAleatoriosN(200));
-            document.getElementById('btnResetAll').addEventListener('click', reiniciarTodo);
-            document.getElementById('btnRefresh').addEventListener('click', refrescarDatos);
-            document.getElementById('btnAdmin').addEventListener('click', abrirAdmin);
-
-            // ══════════════════════════════════════
-            // ARRANQUE
-            // ══════════════════════════════════════
-            (async function init() {
-                construirGrid();
-                await cargarEstadoInicial();
-                suscribirCambiosEnVivo();
-                iniciarPolling(10000);
-                actualizarReloj();
-                setInterval(actualizarReloj, 1000);
-            })();
-        })();
-    </script>
+    // ══════════════════════════════════════
+    // INICIO
+    // ══════════════════════════════════════
+    cargarGaleria();
+})();
+</script>
 </body>
 </html>
-```
