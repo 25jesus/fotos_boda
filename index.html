@@ -3,66 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Invitación Boda & Bautizo</title>
-    <!-- Fuentes elegantes para imitar la imagen -->
+    <title>Invitación - Boda & Bautizo</title>
+    <!-- Fuentes para que el texto sea elegante -->
     <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Montserrat:wght@300;400&display=swap" rel="stylesheet">
     
     <style>
-        /* VARIABLES DE COLORES (Tomados de tu imagen) */
+        /* =========================================
+           1. COLORES EXACTOS DE LA IMAGEN
+           ========================================= */
         :root {
-            --bg-dark: #071221; /* Azul muy oscuro casi negro */
-            --bg-light: #113355; /* Azul marino para el degradado superior */
-            --petal-color: rgba(120, 180, 230, 0.6); /* Azul claro brillante con transparencia */
-            --text-color: #ffffff;
+            --fondo-oscuro: #071221;       /* Azul muy oscuro */
+            --fondo-claro: #113355;        /* Azul marino para el degradado */
+            --color-petalo: rgba(120, 180, 230, 0.6); /* Azul claro con brillo */
+            --texto-blanco: #ffffff;
+            --texto-azul: #a1c4e6;
         }
 
+        /* =========================================
+           2. ESTILOS GENERALES Y FONDO
+           ========================================= */
         body, html {
             margin: 0;
             padding: 0;
             width: 100%;
             height: 100%;
-            overflow: hidden;
-            background: linear-gradient(to bottom, var(--bg-light), var(--bg-dark));
+            overflow: hidden; /* Evita barras de desplazamiento */
+            background: linear-gradient(to bottom, var(--fondo-claro), var(--fondo-oscuro));
             font-family: 'Montserrat', sans-serif;
-            color: var(--text-color);
+            color: var(--texto-blanco);
         }
 
-        /* Contenedor principal */
-        .invitation-container {
-            position: relative;
-            width: 100%;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 2;
-        }
-
-        /* Contenedor de los pétalos */
-        #petals-container {
+        /* Contenedor donde caen los pétalos */
+        #contenedor-petalos {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            pointer-events: none; /* No bloquea los clics del usuario */
+            pointer-events: none; /* No bloquea los clics */
             z-index: 1;
-            overflow: hidden;
         }
 
-        /* Diseño de cada pétalo */
-        .petal {
+        /* =========================================
+           3. DISEÑO DE LOS PÉTALOS (NO CAMBIA SU FUNCIÓN)
+           ========================================= */
+        .petalo {
             position: absolute;
-            background: var(--petal-color);
-            border-radius: 50% 0 50% 50%;
-            box-shadow: 0 0 10px rgba(120, 180, 230, 0.4); /* Efecto de brillo/bokeh */
-            filter: blur(1px); /* Desenfoque suave como en la foto */
-            animation: fall linear infinite;
+            background: var(--color-petalo);
+            border-radius: 50% 0 50% 50%; /* Forma de pétalo */
+            box-shadow: 0 0 10px rgba(120, 180, 230, 0.4); /* Brillo suave */
+            filter: blur(1px); /* Efecto desenfocado como en la foto */
+            animation: caer linear infinite;
         }
 
         /* Animación de caída */
-        @keyframes fall {
+        @keyframes caer {
             0% {
                 transform: translate3d(0, -10vh, 0) rotate(0deg) scale(1);
                 opacity: 0;
@@ -79,18 +74,22 @@
             }
         }
 
-        /* Contenido de texto y gráficos */
-        .content {
+        /* =========================================
+           4. CONTENIDO (Texto y Gráfico)
+           ========================================= */
+        .contenido {
+            position: relative;
             z-index: 10;
-            text-align: center;
             display: flex;
             flex-direction: column;
+            justify-content: center;
             align-items: center;
-            gap: 15px;
+            height: 100vh;
+            text-align: center;
         }
 
-        /* Simulación del gráfico central (Átomo/Anillos) */
-        .graphic {
+        /* Gráfico central */
+        .grafico {
             width: 100px;
             height: 100px;
             position: relative;
@@ -99,48 +98,35 @@
             justify-content: center;
             align-items: center;
         }
-        .ring {
+        .anillo {
             position: absolute;
             border-radius: 50%;
             border: 2px solid rgba(255, 255, 255, 0.4);
         }
-        .ring:nth-child(1) { width: 80px; height: 80px; transform: rotate(30deg); border-color: #8ab4d4; }
-        .ring:nth-child(2) { width: 90px; height: 50px; transform: rotate(-40deg); border-color: #d4b87e; }
-        .ring:nth-child(3) { width: 50px; height: 90px; transform: rotate(45deg); border-color: rgba(255,255,255,0.2); }
-        .center-dot {
+        .anillo:nth-child(1) { width: 80px; height: 80px; transform: rotate(30deg); border-color: #8ab4d4; }
+        .anillo:nth-child(2) { width: 90px; height: 50px; transform: rotate(-40deg); border-color: #d4b87e; }
+        .anillo:nth-child(3) { width: 50px; height: 90px; transform: rotate(45deg); border-color: rgba(255,255,255,0.2); }
+        .punto-central {
             width: 10px;
             height: 10px;
             background: white;
             border-radius: 50%;
             box-shadow: 0 0 15px white;
         }
-        /* Puntos flotantes alrededor del gráfico */
-        .graphic .dot {
-            position: absolute;
-            width: 6px;
-            height: 6px;
-            background: white;
-            border-radius: 50%;
-            box-shadow: 0 0 10px white;
-        }
-        .dot:nth-child(5) { top: 0; left: 20px; }
-        .dot:nth-child(6) { bottom: 10px; right: 0; }
-        .dot:nth-child(7) { top: 40px; left: -10px; }
-        .dot:nth-child(8) { bottom: 0; left: 30px; }
-        .dot:nth-child(9) { top: 10px; right: 20px; }
 
-        /* Tipografías */
-        .subtitle {
+        /* Textos */
+        .subtitulo {
             font-size: 0.9rem;
             letter-spacing: 4px;
             border: 1px solid rgba(138, 180, 212, 0.5);
             padding: 10px 30px;
             border-radius: 50px;
-            color: #a1c4e6;
+            color: var(--texto-azul);
             text-transform: uppercase;
+            margin-bottom: 20px;
         }
 
-        .names {
+        .nombres {
             font-family: 'Great Vibes', cursive;
             font-size: 3rem;
             line-height: 1.2;
@@ -148,94 +134,84 @@
             margin: 10px 0;
         }
 
-        .names .ampersand {
+        .nombres .ampersand {
             font-size: 2rem;
             color: #6bb2d1;
             font-family: 'Montserrat', sans-serif;
         }
 
-        .date {
+        .fecha {
             font-size: 1.1rem;
             letter-spacing: 6px;
-            color: #a1c4e6;
-            margin-top: 10px;
+            color: var(--texto-azul);
+            margin-top: 20px;
         }
     </style>
 </head>
 <body>
 
-    <!-- Contenedor donde caerán los pétalos -->
-    <div id="petals-container"></div>
+    <!-- 1. Contenedor donde JavaScript inyecta los pétalos -->
+    <div id="contenedor-petalos"></div>
 
-    <!-- Contenido de la invitación -->
-    <div class="invitation-container">
-        <div class="content">
-            
-            <!-- Gráfico central -->
-            <div class="graphic">
-                <div class="ring"></div>
-                <div class="ring"></div>
-                <div class="ring"></div>
-                <div class="center-dot"></div>
-                <!-- Puntos decorativos -->
-                <div class="dot"></div>
-                <div class="dot"></div>
-                <div class="dot"></div>
-                <div class="dot"></div>
-                <div class="dot"></div>
-            </div>
-
-            <!-- Textos -->
-            <div class="subtitle">Boda & Bautizo</div>
-            
-            <div class="names">
-                María del Carmen <span class="ampersand">&</span><br>
-                Jesús Eduardo
-            </div>
-            
-            <div class="date">10 · OCTUBRE · 2026</div>
-            
+    <!-- 2. Contenido visual de la invitación -->
+    <div class="contenido">
+        
+        <div class="grafico">
+            <div class="anillo"></div>
+            <div class="anillo"></div>
+            <div class="anillo"></div>
+            <div class="punto-central"></div>
         </div>
+
+        <div class="subtitulo">Boda & Bautizo</div>
+        
+        <div class="nombres">
+            María del Carmen <span class="ampersand">&</span><br>
+            Jesús Eduardo
+        </div>
+        
+        <div class="fecha">10 · OCTUBRE · 2026</div>
+        
     </div>
 
-    <!-- JavaScript para generar los pétalos cayendo -->
+    <!-- 3. JavaScript para crear la caída de pétalos -->
     <script>
-        const petalsContainer = document.getElementById('petals-container');
-        const numberOfPetals = 40; // Cantidad de pétalos en pantalla
+        const contenedor = document.getElementById('contenedor-petalos');
+        const cantidadPetalos = 50; // Puedes subir o bajar este número
 
-        function createPetal() {
-            const petal = document.createElement('div');
-            petal.classList.add('petal');
+        function crearPetalo() {
+            const petalo = document.createElement('div');
+            petalo.classList.add('petalo');
 
-            // Tamaño aleatorio del pétalo (entre 10px y 30px)
-            const size = Math.random() * 20 + 10;
-            petal.style.width = `${size}px`;
-            petal.style.height = `${size}px`;
+            // Tamaño aleatorio
+            const tamaño = Math.random() * 20 + 10;
+            petalo.style.width = `${tamaño}px`;
+            petalo.style.height = `${tamaño}px`;
 
             // Posición inicial horizontal aleatoria
-            petal.style.left = `${Math.random() * 100}vw`;
+            petalo.style.left = `${Math.random() * 100}vw`;
 
-            // Duración de la caída aleatoria (entre 8 y 18 segundos)
-            const duration = Math.random() * 10 + 8;
-            petal.style.animationDuration = `${duration}s`;
+            // Duración de la caída (entre 8 y 18 segundos)
+            const duracion = Math.random() * 10 + 8;
+            petalo.style.animationDuration = `${duracion}s`;
 
-            // Retraso inicial aleatorio para que no caigan todos a la vez
-            const delay = Math.random() * 10;
-            petal.style.animationDelay = `${delay}s`;
+            // Retraso para que no caigan todos al mismo tiempo
+            const retraso = Math.random() * 10;
+            petalo.style.animationDelay = `${retraso}s`;
 
-            // Rotación inicial aleatoria
-            petal.style.transform = `rotate(${Math.random() * 360}deg)`;
+            // Rotación inicial
+            petalo.style.transform = `rotate(${Math.random() * 360}deg)`;
 
-            petalsContainer.appendChild(petal);
+            contenedor.appendChild(petalo);
         }
 
-        // Crear los pétalos iniciales
-        for (let i = 0; i < numberOfPetals; i++) {
-            createPetal();
+        // Generar los pétalos iniciales
+        for (let i = 0; i < cantidadPetalos; i++) {
+            crearPetalo();
         }
 
-        // Opcional: Crear más pétalos continuamente si quieres un efecto infinito
-        // setInterval(createPetal, 1000); 
+        // (Opcional) Si quieres que salgan pétalos nuevos constantemente:
+        // setInterval(crearPetalo, 500); 
     </script>
 
 </body>
